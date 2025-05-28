@@ -1,0 +1,12 @@
+.modal-header,
+.modal-footer {
+    border: none !important;
+}
+
+.close {
+    background-color: transparent !important;
+}
+
+.save {
+    background-color: transparent !important;
+}

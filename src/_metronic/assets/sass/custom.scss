@@ -1,0 +1,307 @@
+@media (max-width: 991.98px) {
+	.app-container {
+		padding-left: 10px;
+		padding-right: 10px !important;
+	}
+	.app-content {
+		padding-top: 10px;
+		padding-bottom: 10px;
+	}
+}
+@media (min-width: 992px) {
+	.app-container {
+		padding-left: 15px !important;
+		padding-right: 15px !important;
+	}
+	.app-content {
+		padding-top: 0;
+		padding-bottom: 15px;
+	}
+}
+
+.max-h-450px {
+	max-height: 450px !important;
+}
+
+.app-header {
+	height: 55px;
+}
+
+.app-sidebar-logo {
+	height: 55px;
+}
+
+[data-kt-app-layout='dark-sidebar'] .app-sidebar {
+	background-color: #212a33;
+	border-right: 0;
+}
+
+.sd-is-disabled {
+	border: 1px solid #f6f6f6 !important;
+	background-color: #ededed !important;
+	cursor: not-allowed !important;
+}
+
+.menu-link-active {
+	background: rgba(
+		74,
+		144,
+		226,
+		0.3
+	) !important; /* Красный цвет с прозрачностью */
+	color: #2d2d5e !important;
+}
+
+.form-control.form-control-solid {
+	background: #f1f1f4;
+}
+
+.sd-search-close {
+	right: 0;
+	top: 0;
+}
+
+.form-check-input:checked {
+	background-color: #007aff !important;
+}
+
+.bg-danger-delete {
+	background: rgba(
+		239,
+		49,
+		36,
+		0.2
+	) !important; /* Красный цвет с прозрачностью */
+}
+
+.text-danger {
+	color: #ef3124 !important;
+}
+
+.bg-danger {
+	background-color: #ef3124 !important;
+}
+
+.btn.btn-danger {
+	background-color: #ef3124 !important;
+}
+
+.sd-no-resize {
+	resize: none;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+	-webkit-appearance: none;
+	margin: 0;
+}
+
+.card .card-body {
+	padding: 1rem;
+}
+.card .card-header {
+	padding: 0 1rem;
+}
+
+// Table
+.table-responsive {
+	position: relative;
+	overflow: auto;
+	max-height: 700px; /* Установите желаемую высоту для прокрутки */
+}
+
+.table thead {
+	position: sticky;
+	top: 0;
+	z-index: 2;
+	background-color: #f8f9fa; /* Фон для `thead` */
+}
+
+.table th {
+	white-space: nowrap;
+	padding: 0.7rem 0.75rem !important;
+}
+
+table td {
+	max-width: 150px; /* Ширина столбца */
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	// padding: 1rem 0.75rem !important;
+}
+
+.sd-table tbody tr:hover {
+	background-color: rgba(128, 128, 128, 0.1) !important;
+}
+
+table tbody .bg-danger-delete:hover {
+	background: rgba(
+		239,
+		49,
+		36,
+		0.3
+	) !important; /* Красный цвет с прозрачностью */
+}
+
+table tbody .select_without_delete {
+	background: rgba(
+		74,
+		144,
+		226,
+		0.5
+	) !important; /* Красный цвет с прозрачностью */
+}
+
+table tbody .select_without_delete:hover {
+	background: rgba(
+		74,
+		144,
+		226,
+		0.5
+	) !important; /* Красный цвет с прозрачностью */
+	color: inherit;
+}
+
+table tbody .select_with_delete {
+	background: rgba(
+		74,
+		144,
+		226,
+		0.3
+	) !important; /* Красный цвет с прозрачностью */
+}
+
+table tbody .select_with_delete:hover {
+	background: rgba(
+		74,
+		144,
+		226,
+		0.3
+	) !important; /* Красный цвет с прозрачностью */
+	color: inherit;
+}
+
+th[aria-disabled='true'] {
+	display: table-cell;
+}
+
+th[aria-disabled='false'] {
+	display: none;
+}
+
+// MODAL COMPONENT
+/* Центрирование модального окна */
+.modal-header {
+	padding: 1.5rem;
+}
+
+.modal-body {
+	padding: 1.5rem;
+}
+
+.modal-footer {
+	padding: 1.5rem;
+}
+
+.modal-xl {
+	max-width: 1500px !important;
+}
+
+// Offcanvas
+.offcanvas-header {
+	// border-bottom: 1px solid #99a1b7;
+	padding: 1rem 2rem;
+}
+
+.offcanvas-body {
+	padding: 1rem 2rem;
+}
+
+.offcanvas-footer {
+	display: flex;
+	flex-direction: row;
+	justify-content: right;
+	align-items: center;
+	padding: 1rem 2rem 2rem 2rem !important;
+	box-shadow: 0 -1px 0 #ebedf2;
+}
+
+// Оставил надо исправить
+.sd-is-valid {
+	background-image: none !important;
+	padding-right: 1rem !important;
+}
+
+.sd_table-form-control {
+	padding: 1rem !important;
+	border: 0 !important;
+}
+
+.sd_table-is-invalid {
+	background-image: none !important;
+	border: 0 !important;
+	background: rgba(239, 49, 36, 0.2);
+	padding: 1rem !important;
+}
+
+.sd_table-is-invalid:hover,
+.sd_table-is-invalid:active,
+.sd_table-is-invalid:focus {
+	background-image: none !important;
+	border: 0 !important;
+	background: rgba(239, 49, 36, 0.2);
+}
+
+.sd_table-is-valid {
+	background-image: none !important;
+	border: 0 !important;
+	background: none;
+}
+
+.sd_table-form-control {
+	border-radius: 0 !important;
+}
+
+// Pagination
+.sd-pagination {
+	.sd-page-item {
+		margin: 0 5px !important;
+		border-radius: 0.5rem !important;
+	}
+
+	.sd-page-item.active .sd-page-link {
+		background-color: #007aff !important;
+		color: white !important;
+		border-color: #007aff !important;
+		border-radius: 0.5rem !important;
+	}
+
+	.sd-page-link {
+		color: #99a1b7 !important;
+		border-radius: 0.5rem !important;
+	}
+
+	.sd-page-link:hover {
+		background-color: #f8f9fa !important;
+		color: #007aff !important;
+	}
+}
+
+.sd-pagination-size {
+	max-width: 70px !important;
+	width: 100% !important;
+	cursor: pointer !important;
+
+	.sd-pagination-size-select {
+		padding: 5px 10px !important;
+		cursor: pointer !important;
+	}
+}
+
+// Select
+
+.sd-select-disabled {
+	border: 1px solid #f6f6f6 !important;
+	background-color: #ededed !important;
+	cursor: not-allowed !important;
+}
