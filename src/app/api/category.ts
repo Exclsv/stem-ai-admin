@@ -3,9 +3,9 @@ import { CategoryType } from '../../_metronic/helpers';
 
 export interface MutationCategoryType {
 	parent_category: number | null;
-	image: string;
+	image?: string;
 	translations: { language_id: number; language_code: string; value: string }[];
-	prompts: { language_id: number; language_code: string; value: string }[];
+	prompts: { language_id: number; language_code: string; prompt: string }[];
 }
 
 export const getCategories = async (
@@ -16,7 +16,7 @@ export const getCategories = async (
 };
 
 export const createCategory = async (category: MutationCategoryType) => {
-	const { data } = await apiClient.post('/projects', category);
+	const { data } = await apiClient.post('/projects/', category);
 	return data;
 };
 
@@ -24,7 +24,7 @@ export const updateCategory = async (
 	id: number,
 	data: Partial<MutationCategoryType>
 ) => {
-	const { data: updatedData } = await apiClient.put(`/projects/${id}`, data);
+	const { data: updatedData } = await apiClient.put(`/projects/${id}/`, data);
 	return updatedData;
 };
 

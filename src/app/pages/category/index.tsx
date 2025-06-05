@@ -1,7 +1,7 @@
 import clsx from 'clsx';
 import moment from 'moment';
 import { useIntl } from 'react-intl';
-import { FC, useEffect, useState } from 'react';
+import { FC, useEffect, useState, useCallback, Fragment } from 'react';
 import { AddOrEditOffcanvas } from './components';
 import { useSearchParams } from 'react-router-dom';
 import { Content } from '../../../_metronic/layout/components/content';
@@ -29,6 +29,7 @@ export const CategoryPage: FC = () => {
 
 	const [choosenItem, setChoosenItem] = useState<CategoryType | null>(null);
 	const [searchName, setSearchName] = useState<string>('');
+	const [expandedRows, setExpandedRows] = useState<number[]>([]);
 
 	const [offCanvasShow, setOffCanvasShow] = useState<boolean>(false);
 	const [visibleColumnTable, setVisibleColumnTable] = useState<boolean>(false);
@@ -42,18 +43,42 @@ export const CategoryPage: FC = () => {
 	const [totalPageCount, setTotalPageCount] = useState(
 		parseInt(searchParams.get('total_page_count') as string, 10) || 1
 	);
+	const [categories, setCategories] = useState<CategoryType[]>([]);
 
-	const buildQueryParams = () => {
+	const buildQueryParams = useCallback(() => {
 		let query = `?page=${page}&page_size=${page_size}`;
 		if (search) query += `&search=${search}`;
 
 		return query;
-	};
+	}, [page, page_size, search]);
 
 	const { data, isLoading, isError, error, refetch } =
 		useCategories(buildQueryParams());
 
 	const { data: languages } = useLanguages('?page=1&page_size=100');
+
+	// Обработка ошибок API
+	useEffect(() => {
+		if (isError && error) {
+			// Здесь можно добавить обработку ошибок, например, показать уведомление
+			console.error('API Error:', error);
+		}
+	}, [isError, error]);
+
+	// Обновление totalPageCount при получении данных
+	useEffect(() => {
+		if (data) {
+			// Предполагаем, что в API есть информация о количестве страниц
+			// Если нет, то можем рассчитать из общего количества элементов
+			// setTotalPageCount(Math.ceil(totalItems / page_size));
+			setCategories(data);
+		}
+	}, [data, page_size]);
+
+	// Обновление данных при изменении параметров запроса
+	useEffect(() => {
+		refetch();
+	}, [page, page_size, search, refetch]);
 
 	// TABLE COMPONENT
 	const [tableThead, setTableThead] = useState<TableHeadType[]>([
@@ -83,18 +108,18 @@ export const CategoryPage: FC = () => {
 			isActive: false,
 			disabled: false,
 		},
-		{
-			title: intl.formatMessage({ id: 'COMMON.CREATED_BY' }),
-			key: 'created_by',
-			isActive: false,
-			disabled: false,
-		},
-		{
-			title: intl.formatMessage({ id: 'COMMON.UPDATED_BY' }),
-			key: 'updated_by',
-			isActive: false,
-			disabled: false,
-		},
+		// {
+		// 	title: intl.formatMessage({ id: 'COMMON.CREATED_BY' }),
+		// 	key: 'created_by',
+		// 	isActive: false,
+		// 	disabled: false,
+		// },
+		// {
+		// 	title: intl.formatMessage({ id: 'COMMON.UPDATED_BY' }),
+		// 	key: 'updated_by',
+		// 	isActive: false,
+		// 	disabled: false,
+		// },
 		{
 			title: '',
 			key: 'actions',
@@ -106,7 +131,9 @@ export const CategoryPage: FC = () => {
 	const renderTableRow = (
 		value: CategoryType,
 		selectedItems: number[],
-		setSelectedItems: React.Dispatch<React.SetStateAction<number[]>>
+		setSelectedItems: React.Dispatch<React.SetStateAction<number[]>>,
+		allCategories: CategoryType[],
+		isSubRow: boolean = false
 	) => {
 		const isSelected = selectedItems.includes(value.id);
 		const handleCheckboxChange = (id: number) => {
@@ -117,82 +144,200 @@ export const CategoryPage: FC = () => {
 			);
 		};
 
-		return (
-			<tr
-				key={`list-${value.id}`}
-				className={clsx({
-					'bg-danger-delete': value.is_delete,
-					select_without_delete: isSelected && value.is_delete,
-					select_with_delete: isSelected && !value.is_delete,
-				})}
-				onDoubleClick={(e) => {
-					setChoosenItem(value);
-					setOffCanvasShow(true);
-					e.stopPropagation();
-				}}>
-				<th className="w-25px ps-3 align-middle ">
-					<div className="form-check form-check-sm  form-check-custom form-check-solid">
-						<input
-							className="form-check-input"
-							type="checkbox"
-							checked={isSelected}
-							onChange={(e) => {
-								handleCheckboxChange(value.id);
-								e.stopPropagation();
-							}}
-						/>
-					</div>
-				</th>
-				{tableThead.map(
-					(column) =>
-						column.isActive && (
-							<td key={`${column.key}-${value.id}`} className="align-middle ">
-								{renderColumnData(
-									column.key,
-									value[column.key as keyof CategoryType]
-								)}
-							</td>
-						)
-				)}
-				<td className="d-flex justify-content-end align-middle">
-					<SDButton
-						onClick={() => {
-							setChoosenItem(value);
-							setOffCanvasShow(true);
-						}}
-						className="btn btn-icon btn-bg-light btn-active-color-danger btn-sm me-1">
-						<KTIcon iconName="pencil" className="fs-3" />
-					</SDButton>
+		const hasSubcategories = allCategories.some(
+			(cat) => cat.parent_category === value.id
+		);
+		const isExpanded = expandedRows.includes(value.id);
 
-					<SDButton
-						onClick={() => {
-							setChoosenItem(value);
-							setShowDeleteModal(true);
-						}}
-						className="btn btn-icon btn-bg-light btn-active-color-danger btn-sm">
-						<KTIcon iconName="trash" className="fs-3" />
-					</SDButton>
-				</td>
-			</tr>
+		const toggleRowExpansion = (e?: React.MouseEvent) => {
+			e?.stopPropagation();
+
+			setExpandedRows((prevExpanded) =>
+				prevExpanded.includes(value.id)
+					? prevExpanded.filter((rowId) => rowId !== value.id)
+					: [...prevExpanded, value.id]
+			);
+		};
+
+		const rowClass = clsx({
+			'bg-danger-delete': value.is_delete,
+			select_without_delete: isSelected && value.is_delete,
+			select_with_delete: isSelected && !value.is_delete,
+			'fw-bold': !isSubRow && hasSubcategories,
+			'cursor-pointer': !isSubRow && hasSubcategories,
+			'subcategory-item-row': isSubRow,
+			'border-bottom-0': !isSubRow && isExpanded && hasSubcategories,
+		});
+
+		// Дополнительный отступ для заголовков подкатегорий
+		const titleCellStyle =
+			isSubRow && tableThead.find((col) => col.key === 'title')?.isActive
+				? { paddingLeft: '40px' }
+				: {};
+
+		// Обработчик клика на строку для раскрытия подкатегорий
+		const handleRowClick = () => {
+			if (!isSubRow && hasSubcategories) {
+				toggleRowExpansion();
+			}
+		};
+
+		return (
+			<Fragment key={`list-fragment-${value.id}`}>
+				<tr
+					key={`list-${value.id}`}
+					className={rowClass}
+					onClick={handleRowClick}>
+					<td className="w-25px ps-3 align-middle">
+						<div className="form-check form-check-sm form-check-custom form-check-solid">
+							<input
+								className="form-check-input"
+								type="checkbox"
+								checked={isSelected}
+								onChange={(e) => {
+									handleCheckboxChange(value.id);
+									e.stopPropagation();
+								}}
+							/>
+						</div>
+					</td>
+					{tableThead.map(
+						(column) =>
+							column.isActive && (
+								<td
+									key={`${column.key}-${value.id}`}
+									className={clsx('align-middle')}
+									style={column.key === 'title' ? titleCellStyle : {}}>
+									{!isSubRow && column.key === 'title' && hasSubcategories && (
+										<span
+											className="cursor-pointer"
+											onClick={(e) => {
+												e.stopPropagation();
+												toggleRowExpansion(e);
+											}}>
+											<KTIcon
+												iconName={isExpanded ? 'minus-square' : 'plus-square'}
+												className="fs-3 me-2 text-primary"
+											/>
+										</span>
+									)}
+									{renderColumnData(column.key, value)}
+								</td>
+							)
+					)}
+					<td className="d-flex justify-content-end align-middle">
+						<SDButton
+							className="btn btn-icon btn-bg-light btn-active-color-danger btn-sm me-1"
+							onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+								e.stopPropagation();
+								setChoosenItem(value);
+								setOffCanvasShow(true);
+							}}>
+							<KTIcon iconName="pencil" className="fs-3" />
+						</SDButton>
+
+						<SDButton
+							className="btn btn-icon btn-bg-light btn-active-color-danger btn-sm"
+							onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+								e.stopPropagation();
+								setChoosenItem(value);
+								setShowDeleteModal(true);
+							}}>
+							<KTIcon iconName="trash" className="fs-3" />
+						</SDButton>
+					</td>
+				</tr>
+
+				{!isSubRow && isExpanded && hasSubcategories && (
+					<tr
+						key={`sub-table-container-${value.id}`}
+						className="sub-table-row border-bottom">
+						{/* Ячейка занимает все колонки основной таблицы */}
+						<td
+							colSpan={tableThead.filter((col) => col.isActive).length + 2}
+							className="p-0">
+							<div
+								style={{
+									padding: '10px 20px 10px 40px',
+									backgroundColor: '#f9f9f9',
+									width: '100%',
+									boxSizing: 'border-box',
+								}}>
+								<table className="table table-sm table-hover nested-categories-table w-100">
+									<thead className="border-bottom">
+										<tr>
+											{/* Пустая ячейка для чекбокса */}
+											<th className="w-25px"></th>
+											{tableThead
+												.filter((col) => col.isActive)
+												.map((column) => (
+													<th key={`subcategory-header-${column.key}`}>
+														{column.title}
+													</th>
+												))}
+											{/* Пустая ячейка для кнопок действий */}
+											<th className="w-50px"></th>
+										</tr>
+									</thead>
+									<tbody>
+										{allCategories
+											.filter((cat) => cat.parent_category === value.id)
+											.map((subCategory) =>
+												renderTableRow(
+													subCategory,
+													selectedItems,
+													setSelectedItems,
+													allCategories,
+													true // Помечаем, что это строка подкатегории
+												)
+											)}
+									</tbody>
+								</table>
+							</div>
+						</td>
+					</tr>
+				)}
+			</Fragment>
 		);
 	};
 
 	const renderColumnData = (
 		key: string,
-		value: CategoryType[keyof CategoryType]
+		item: CategoryType
 	): React.ReactNode => {
 		switch (key) {
+			case 'title': {
+				// Получаем первый перевод категории или возвращаем значение по умолчанию
+				const translation =
+					item.translations && item.translations.length > 0
+						? item.translations[0]?.value
+						: '-';
+				return translation;
+			}
+			case 'description': {
+				// Получаем первый промпт категории или возвращаем значение по умолчанию
+				const prompt =
+					item.prompts && item.prompts.length > 0
+						? item.prompts[0]?.prompt
+						: '-';
+				return prompt;
+			}
 			case 'created_at':
 			case 'updated_at':
-				return moment(value as string).format('DD.MM.YYYY');
+				return item[key]
+					? moment(item[key] as string).format('DD.MM.YYYY')
+					: '-';
+
+			case 'created_by':
+			case 'updated_by':
+				return item[key] || '-';
 
 			case 'sub_categories':
-				return Array.isArray(value)
-					? value.map((item) => item.id).join(', ')
-					: String(value);
+				if (!item.parent_category) return '-';
+				return item.parent_category || '-'; // parent_category теперь имеет тип number | null
 
 			default:
-				return String(value);
+				return (item[key as keyof CategoryType] as string) || '-';
 		}
 	};
 
@@ -213,13 +358,17 @@ export const CategoryPage: FC = () => {
 		setSearchParams(searchParams);
 	};
 
+	// Обработчик закрытия модального окна удаления
+	const handleCloseDeleteModal = () => {
+		setShowDeleteModal(false);
+		setChoosenItem(null);
+	};
+
 	useEffect(() => {
 		if (search != '') {
 			setSearchName(search);
 		}
-	}, []);
-
-	console.log('data', data);
+	}, [search]);
 
 	return (
 		<>
@@ -285,12 +434,21 @@ export const CategoryPage: FC = () => {
 							<SDTable
 								isLoading={isLoading}
 								thead={tableThead}
-								data={data?.length || 0}
+								data={categories?.length || 0}
 								selectedItems={selectedItems.length}
-								onChageSelectedItems={() => changeSelectedItems(data || [])}>
-								{data?.map((item) =>
-									renderTableRow(item, selectedItems, setSelectedItems)
-								)}
+								onChageSelectedItems={() =>
+									changeSelectedItems(categories || [])
+								}>
+								{categories
+									?.filter((item) => !item.parent_category) // Рендерим только родительские категории
+									.map((item) =>
+										renderTableRow(
+											item,
+											selectedItems,
+											setSelectedItems,
+											categories || []
+										)
+									)}
 							</SDTable>
 						</div>
 						<div className="w-100 d-flex justify-content-between px-4 pb-5">
@@ -327,6 +485,7 @@ export const CategoryPage: FC = () => {
 				choosenItem={choosenItem}
 				refetch={refetch}
 				languages={languages}
+				setShowDeleteModal={() => setShowDeleteModal(true)}
 			/>
 
 			<SDVisibleColumnTable
@@ -339,7 +498,7 @@ export const CategoryPage: FC = () => {
 			<SDModalDelete
 				setOffCanvasShow={() => setOffCanvasShow(false)}
 				show={showDeleteModal}
-				onHide={() => setShowDeleteModal(false)}
+				onHide={handleCloseDeleteModal}
 				url={`/projects/${choosenItem?.id}`}
 				refetch={refetch}
 			/>

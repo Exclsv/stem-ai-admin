@@ -28,8 +28,8 @@ export interface SubCategoryType extends FeatureRes {
 }
 
 export interface CategoryType extends FeatureRes {
-	parent_category: SubCategoryType;
+	parent_category: number | null;
 	image: string;
-	translations: LanguageType[];
-	prompts: PromptType[];
+	translations: { language_id: number; language_code: string; value: string }[];
+	prompts: { language_id: number; language_code: string; prompt: string }[];
 }
