@@ -3,7 +3,7 @@ import moment from 'moment';
 import { useIntl } from 'react-intl';
 import { FC, useEffect, useState, useCallback, Fragment } from 'react';
 import { AddOrEditOffcanvas } from './components';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Content } from '../../../_metronic/layout/components/content';
 import {
 	CategoryType,
@@ -22,10 +22,12 @@ import {
 } from '../../components';
 import { useCategories } from '../../hooks/category/useCategoriesQuery.ts';
 import { useLanguages } from '../../hooks/language/useLanguagiesQuery.ts';
+import apiClient from '../../hooks/apiClient.ts';
 
 export const CategoryPage: FC = () => {
 	const intl = useIntl();
 	const [searchParams, setSearchParams] = useSearchParams();
+	const navigate = useNavigate();
 
 	const [choosenItem, setChoosenItem] = useState<CategoryType | null>(null);
 	const [searchName, setSearchName] = useState<string>('');
@@ -78,6 +80,10 @@ export const CategoryPage: FC = () => {
 	// Обновление данных при изменении параметров запроса
 	useEffect(() => {
 		refetch();
+
+		// apiClient.get('/question-group/1/').then((res) => {
+		// 	console.log(res);
+		// });
 	}, [page, page_size, search, refetch]);
 
 	// TABLE COMPONENT
@@ -164,21 +170,18 @@ export const CategoryPage: FC = () => {
 			select_without_delete: isSelected && value.is_delete,
 			select_with_delete: isSelected && !value.is_delete,
 			'fw-bold': !isSubRow && hasSubcategories,
-			'cursor-pointer': !isSubRow && hasSubcategories,
+			'cursor-pointer': (!isSubRow && hasSubcategories) || isSubRow,
 			'subcategory-item-row': isSubRow,
 			'border-bottom-0': !isSubRow && isExpanded && hasSubcategories,
 		});
 
-		// Дополнительный отступ для заголовков подкатегорий
-		const titleCellStyle =
-			isSubRow && tableThead.find((col) => col.key === 'title')?.isActive
-				? { paddingLeft: '40px' }
-				: {};
-
-		// Обработчик клика на строку для раскрытия подкатегорий
+		// Обработчик клика на строку для раскрытия подкатегорий или перехода к шагам
 		const handleRowClick = () => {
 			if (!isSubRow && hasSubcategories) {
 				toggleRowExpansion();
+			} else if (isSubRow) {
+				// Если кликнули на подкатегорию, переходим на страницу шагов
+				navigate(`/question-group/${value.id}`);
 			}
 		};
 
@@ -206,8 +209,7 @@ export const CategoryPage: FC = () => {
 							column.isActive && (
 								<td
 									key={`${column.key}-${value.id}`}
-									className={clsx('align-middle')}
-									style={column.key === 'title' ? titleCellStyle : {}}>
+									className={clsx('align-middle')}>
 									{!isSubRow && column.key === 'title' && hasSubcategories && (
 										<span
 											className="cursor-pointer"
@@ -219,9 +221,24 @@ export const CategoryPage: FC = () => {
 												iconName={isExpanded ? 'minus-square' : 'plus-square'}
 												className="fs-3 me-2 text-primary"
 											/>
+											{renderColumnData(column.key, value)}
 										</span>
 									)}
-									{renderColumnData(column.key, value)}
+									{isSubRow && column.key === 'title' && (
+										<span className="d-flex align-items-center">
+											<KTIcon
+												iconName="right-square"
+												className="fs-3 me-2 text-info"
+											/>
+											{renderColumnData(column.key, value)}
+										</span>
+									)}
+									{!isSubRow &&
+										column.key === 'title' &&
+										!hasSubcategories &&
+										renderColumnData(column.key, value)}
+									{column.key !== 'title' &&
+										renderColumnData(column.key, value)}
 								</td>
 							)
 					)}

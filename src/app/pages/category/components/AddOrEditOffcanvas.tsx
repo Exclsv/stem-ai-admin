@@ -1,7 +1,7 @@
 import * as Yup from 'yup';
 import { useFormik } from 'formik';
 import { useIntl } from 'react-intl';
-import { FC, useState, useEffect, ChangeEvent } from 'react';
+import { FC, useState, useEffect, ChangeEvent, useRef } from 'react';
 import { toast } from 'react-toastify';
 import {
 	SDConfirmationModal,
@@ -35,23 +35,53 @@ type AddOrEditOffcanvasProps = {
 	languages?: LanguageType[];
 };
 
-type translationType = {
+type TranslationType = {
 	language_id: number;
 	language_code: string;
 	value: string;
+	isRequired?: boolean;
 };
 
-type promptType = {
+type PromptType = {
 	language_id: number;
 	language_code: string;
 	prompt: string;
+	isRequired?: boolean;
 };
 
-type initialValuesType = {
+type FormValuesType = {
 	parent_category: number | null;
 	image?: string;
-	translations: translationType[];
-	prompts: promptType[];
+	translations: TranslationType[];
+	prompts: PromptType[];
+};
+
+// Функция глубокого сравнения объектов для проверки изменений
+const checkFormHasChanged = (
+	initialValues: any,
+	currentValues: any,
+	hasFile: boolean
+): boolean => {
+	// Если файл был выбран, форма считается измененной
+	if (hasFile) return true;
+
+	// Проверяем изменения в parent_category
+	if (initialValues.parent_category !== currentValues.parent_category)
+		return true;
+
+	// Проверяем изменения в translations
+	const translationsChanged = initialValues.translations.some(
+		(t: any, index: number) => {
+			return t.value !== currentValues.translations[index]?.value;
+		}
+	);
+
+	// Проверяем изменения в prompts
+	const promptsChanged = initialValues.prompts.some((p: any, index: number) => {
+		return p.prompt !== currentValues.prompts[index]?.prompt;
+	});
+
+	return translationsChanged || promptsChanged;
 };
 
 export const AddOrEditOffcanvas: FC<AddOrEditOffcanvasProps> = ({
@@ -65,9 +95,10 @@ export const AddOrEditOffcanvas: FC<AddOrEditOffcanvasProps> = ({
 }) => {
 	const intl = useIntl();
 	const [showConfirmationModal, setShowConfirmationModal] = useState(false);
-	const [translations, setTranslations] = useState<translationType[]>([]);
-	const [prompts, setPrompts] = useState<promptType[]>([]);
 	const [selectedFile, setSelectedFile] = useState<File | null>(null);
+	const [formIsDirty, setFormIsDirty] = useState(false);
+	// Сохраняем начальные значения для сравнения
+	const initialFormValuesRef = useRef<FormValuesType | null>(null);
 
 	const { mutateAsync: createCategory } = useCreateCategory();
 	const { mutateAsync: updateCategory } = useUpdateCategory();
@@ -75,59 +106,16 @@ export const AddOrEditOffcanvas: FC<AddOrEditOffcanvasProps> = ({
 		useCategoriesForSelect();
 	const queryClient = useQueryClient();
 
-	// Инициализация переводов и промптов при загрузке данных
-	useEffect(() => {
-		if (choosenItem && languages) {
-			// Инициализация переводов
-			const initialTranslations = languages.map((lang) => {
-				const existingTranslation = choosenItem.translations.find(
-					(t) => t.language_id === lang.id
-				);
-				return {
-					language_id: lang.id,
-					language_code: lang.code,
-					value: existingTranslation?.value || '',
-				};
-			});
-			setTranslations(initialTranslations);
-
-			// Инициализация промптов
-			const initialPrompts = languages.map((lang) => {
-				const existingPrompt = choosenItem.prompts.find(
-					(p) => p.language_id === lang.id
-				);
-				return {
-					language_id: lang.id,
-					language_code: lang.code,
-					prompt: existingPrompt?.prompt || '',
-				};
-			});
-			setPrompts(initialPrompts);
-		} else if (languages) {
-			// Для новой категории создаем пустые переводы и промпты
-			const emptyTranslations = languages.map((lang) => ({
-				language_id: lang.id,
-				language_code: lang.code,
-				value: '',
-			}));
-			setTranslations(emptyTranslations);
-
-			const emptyPrompts = languages.map((lang) => ({
-				language_id: lang.id,
-				language_code: lang.code,
-				prompt: '',
-			}));
-			setPrompts(emptyPrompts);
-		}
-	}, [choosenItem, languages]);
-
+	// Инициализация схемы валидации с проверкой всех полей
 	const validationSchema = Yup.object().shape({
 		parent_category: Yup.number()
 			.nullable()
-			.test(
-				'one-level-depth',
-				intl.formatMessage({ id: 'VALIDATION.CATEGORY.ONE_LEVEL_DEPTH' }),
-				function (value) {
+			.test({
+				name: 'one-level-depth',
+				message: intl.formatMessage({
+					id: 'VALIDATION.CATEGORY.ONE_LEVEL_DEPTH',
+				}),
+				test: function (value) {
 					// Если мы не задаём родителя, то всё ок
 					if (value === null) return true;
 
@@ -140,34 +128,260 @@ export const AddOrEditOffcanvas: FC<AddOrEditOffcanvasProps> = ({
 						// Если уже есть подкатегории и пытаемся задать parent_category,
 						// то возвращаем ошибку
 						if (hasSubcategories) {
-							return this.createError({
-								message: intl.formatMessage({
-									id: 'VALIDATION.CATEGORY.CANNOT_HAVE_PARENT_WITH_SUBCATEGORIES',
-								}),
-							});
+							return false;
 						}
 					}
 
 					return true;
-				}
+				},
+			}),
+		image: Yup.mixed().test({
+			name: 'fileSize',
+			message: intl.formatMessage(
+				{ id: 'VALIDATION.MAX_FILE_SIZE' },
+				{ size: '5MB' }
 			),
-		image: Yup.mixed().test(
-			'fileSize',
-			intl.formatMessage({ id: 'VALIDATION.MAX_FILE_SIZE' }, { size: '5MB' }),
-			(value) => {
+			test: function (value) {
 				if (!value || typeof value === 'string') return true;
 				if (selectedFile) return selectedFile.size <= MAX_FILE_SIZE;
 				return true;
-			}
+			},
+		}),
+		translations: Yup.array().of(
+			Yup.object().shape({
+				value: Yup.string().test({
+					name: 'is-required',
+					message: intl.formatMessage(
+						{ id: 'VALIDATION.REQUIRED' },
+						{ field: 'Name' }
+					),
+					test: function (value) {
+						const { parent } = this;
+						return (
+							!parent.isRequired || (value !== undefined && value.trim() !== '')
+						);
+					},
+				}),
+			})
+		),
+		prompts: Yup.array().of(
+			Yup.object().shape({
+				prompt: Yup.string().test({
+					name: 'is-required',
+					message: intl.formatMessage(
+						{ id: 'VALIDATION.REQUIRED' },
+						{ field: 'Prompt' }
+					),
+					test: function (value) {
+						const { parent } = this;
+						return (
+							!parent.isRequired || (value !== undefined && value.trim() !== '')
+						);
+					},
+				}),
+			})
 		),
 	});
 
-	const initialValues: initialValuesType = {
-		parent_category: choosenItem?.parent_category || null,
-		image: choosenItem?.image || undefined,
-		translations: [],
-		prompts: [],
+	// Инициализация начальных значений формы
+	const getInitialValues = (): FormValuesType => {
+		let initialTranslations: TranslationType[] = [];
+		let initialPrompts: PromptType[] = [];
+
+		if (languages) {
+			initialTranslations = languages.map((lang) => {
+				const existingTranslation = choosenItem?.translations.find(
+					(t) => t.language_id === lang.id
+				);
+				return {
+					language_id: lang.id,
+					language_code: lang.code,
+					value: existingTranslation?.value || '',
+					isRequired: true, // Все языки обязательны
+				};
+			});
+
+			initialPrompts = languages.map((lang) => {
+				const existingPrompt = choosenItem?.prompts.find(
+					(p) => p.language_id === lang.id
+				);
+				return {
+					language_id: lang.id,
+					language_code: lang.code,
+					prompt: existingPrompt?.prompt || '',
+					isRequired: true, // Промпты обязательны
+				};
+			});
+		}
+
+		return {
+			parent_category: choosenItem?.parent_category || null,
+			image: choosenItem?.image || undefined,
+			translations: initialTranslations,
+			prompts: initialPrompts,
+		};
 	};
+
+	const formik = useFormik({
+		initialValues: getInitialValues(),
+		validationSchema,
+		enableReinitialize: false,
+		validateOnChange: true,
+		validateOnBlur: true,
+		onSubmit: async (values, { setSubmitting, resetForm }) => {
+			try {
+				const isEdit = type === 'edit' && choosenItem?.id;
+
+				// Подготовка данных для отправки на сервер
+				let imageValue: string | undefined = values.image;
+
+				// Обработка файла изображения
+				if (selectedFile) {
+					// Здесь должна быть логика загрузки файла на сервер
+					// и получение URL или base64 строки
+					// Для примера оставляем значение undefined
+					imageValue = undefined;
+				}
+
+				// Проверяем, что translations содержат валидные значения
+				const validTranslations = values.translations.filter(
+					(t) => t.value.trim() !== ''
+				);
+				const validPrompts = values.prompts.filter(
+					(p) => p.prompt.trim() !== ''
+				);
+
+				if (validTranslations.length === 0) {
+					toast.error(
+						intl.formatMessage(
+							{ id: 'VALIDATION.REQUIRED' },
+							{ field: intl.formatMessage({ id: 'COMMON.TRANSLATIONS' }) }
+						)
+					);
+					setSubmitting(false);
+					return;
+				}
+
+				// Проверяем наличие промптов
+				if (validPrompts.length === 0) {
+					toast.error(
+						intl.formatMessage(
+							{ id: 'VALIDATION.REQUIRED' },
+							{ field: intl.formatMessage({ id: 'COMMON.PROMPTS' }) }
+						)
+					);
+					setSubmitting(false);
+					return;
+				}
+
+				// Формируем данные для запроса
+				const requestData = {
+					// Явно указываем parent_category, даже если оно null
+					parent_category: values.parent_category,
+					translations: validTranslations.map(
+						({ language_id, language_code, value }) => ({
+							language_id,
+							language_code,
+							value,
+						})
+					),
+					prompts: validPrompts.map(
+						({ language_id, language_code, prompt }) => ({
+							language_id,
+							language_code,
+							prompt,
+						})
+					),
+				};
+
+				// Добавляем изображение только если оно задано
+				if (imageValue !== undefined) {
+					(requestData as any).image = imageValue;
+				}
+
+				if (isEdit) {
+					await updateCategory({ id: choosenItem.id, data: requestData });
+				} else {
+					await createCategory(requestData);
+				}
+
+				// Сбрасываем состояние
+				resetForm();
+				setSelectedFile(null);
+				setFormIsDirty(false);
+
+				// Обновляем данные на странице категорий
+				refetch();
+
+				// Обновляем список категорий в React Query
+				await queryClient.invalidateQueries({
+					queryKey: ['categories-for-select'],
+				});
+
+				toast.success(
+					intl.formatMessage({
+						id:
+							type === 'edit'
+								? 'NOTIFICATION.CATEGORY.UPDATED'
+								: 'NOTIFICATION.CATEGORY.CREATED',
+					})
+				);
+
+				onHide();
+			} catch (error) {
+				console.error('Error updating/creating category:', error);
+				const apiError = error as ApiError;
+				notifyError(intl, apiError.response?.status || 500);
+			} finally {
+				setSubmitting(false);
+			}
+		},
+	});
+
+	// Для отладки
+	useEffect(() => {
+		console.log('Category form checking for changes...');
+	}, [formik.values]);
+
+	// Устанавливаем начальные значения при открытии или изменении исходных данных
+	useEffect(() => {
+		if (show) {
+			const newInitialValues = getInitialValues();
+
+			// Устанавливаем значения формы
+			formik.setValues(newInitialValues, false);
+
+			// Сохраняем начальные значения для дальнейшего сравнения
+			initialFormValuesRef.current = JSON.parse(
+				JSON.stringify(newInitialValues)
+			);
+
+			// Сбрасываем состояние формы
+			setSelectedFile(null);
+			setFormIsDirty(false);
+
+			console.log('Initialized form with values:', newInitialValues);
+		}
+	}, [choosenItem, languages, show]);
+
+	// Проверяем изменения формы при каждом изменении значений
+	useEffect(() => {
+		if (initialFormValuesRef.current) {
+			const hasChanges = checkFormHasChanged(
+				initialFormValuesRef.current,
+				formik.values,
+				selectedFile !== null
+			);
+
+			console.log(
+				'Form has changes:',
+				hasChanges,
+				'Selected file:',
+				selectedFile !== null
+			);
+			setFormIsDirty(hasChanges);
+		}
+	}, [formik.values, selectedFile]);
 
 	const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0] || null;
@@ -234,99 +448,13 @@ export const AddOrEditOffcanvas: FC<AddOrEditOffcanvasProps> = ({
 			});
 	};
 
-	const formik = useFormik({
-		initialValues,
-		enableReinitialize: true,
-		validationSchema,
-		onSubmit: async (values, { setSubmitting }) => {
-			const isEdit = type === 'edit' && choosenItem?.id;
-
-			// Подготовка данных для отправки на сервер
-			let imageValue: string | undefined = values.image;
-
-			// Обработка файла изображения
-			if (selectedFile) {
-				// Здесь должна быть логика загрузки файла на сервер
-				// и получение URL или base64 строки
-				// Для примера оставляем значение undefined
-				imageValue = undefined;
-			}
-
-			// Проверяем, что translations и prompts содержат валидные значения
-			const validTranslations = translations.filter(
-				(t) => t.value.trim() !== ''
-			);
-			const validPrompts = prompts.filter((p) => p.prompt.trim() !== '');
-
-			if (validTranslations.length === 0) {
-				toast.error(
-					intl.formatMessage(
-						{ id: 'VALIDATION.REQUIRED_FIELD' },
-						{ field: intl.formatMessage({ id: 'COMMON.TRANSLATIONS' }) }
-					)
-				);
-				setSubmitting(false);
-				return;
-			}
-
-			// Формируем данные для запроса
-			const requestData = {
-				// Явно указываем parent_category, даже если оно null
-				parent_category: values.parent_category,
-				translations: validTranslations,
-				prompts: validPrompts,
-			};
-
-			// Добавляем изображение только если оно задано
-			if (imageValue !== undefined) {
-				(requestData as any).image = imageValue;
-			}
-
-			console.log('Sending data to API:', requestData);
-
-			try {
-				if (isEdit) {
-					// Для обновления явно проверяем, является ли это конвертацией из подкатегории в обычную категорию
-					if (
-						choosenItem?.parent_category !== null &&
-						values.parent_category === null
-					) {
-						console.log('Converting subcategory to regular category');
-					}
-					await updateCategory({ id: choosenItem.id, data: requestData });
-				} else {
-					await createCategory(requestData);
-				}
-				handleConfirmClose();
-
-				// Обновляем данные на странице категорий
-				refetch();
-
-				// Обновляем список категорий в React Query
-				await queryClient.invalidateQueries({
-					queryKey: ['categories-for-select'],
-				});
-
-				toast.success(
-					intl.formatMessage({
-						id:
-							type === 'edit'
-								? 'NOTIFICATION.CATEGORY.UPDATED'
-								: 'NOTIFICATION.CATEGORY.CREATED',
-					})
-				);
-			} catch (error) {
-				console.error('Error updating/creating category:', error);
-				const apiError = error as ApiError;
-				notifyError(intl, apiError.response?.status || 500);
-			} finally {
-				setSubmitting(false);
-			}
-		},
-	});
+	// Функция обработки изменения родительской категории
+	const handleParentCategoryChange = (option: Option | null) => {
+		formik.setFieldValue('parent_category', option?.value || null);
+	};
 
 	const handleOnHide = () => {
-		if (formik.dirty) {
+		if (formIsDirty) {
 			setShowConfirmationModal(true);
 		} else {
 			handleConfirmClose();
@@ -337,15 +465,11 @@ export const AddOrEditOffcanvas: FC<AddOrEditOffcanvasProps> = ({
 		setShowConfirmationModal(false);
 		formik.resetForm();
 		setSelectedFile(null);
+		setFormIsDirty(false);
 		onHide();
 	};
 
 	const isDisabled = formik.isSubmitting;
-
-	// Функция обработки изменения родительской категории
-	const handleParentCategoryChange = (option: Option | null) => {
-		formik.setFieldValue('parent_category', option?.value || null);
-	};
 
 	return (
 		<SDOffcanvas
@@ -417,23 +541,22 @@ export const AddOrEditOffcanvas: FC<AddOrEditOffcanvasProps> = ({
 					<SDInput
 						maxLength={128}
 						label={`${intl.formatMessage({ id: 'COMMON.NAME' })} (${lang.name})`}
-						touched={formik.touched.translations?.[index]?.value}
-						errors={formik.errors.translations?.[index]}
+						name={`translations[${index}].value`}
+						value={formik.values.translations[index]?.value || ''}
+						onChange={formik.handleChange}
+						onBlur={formik.handleBlur}
+						touched={Boolean(
+							formik.touched.translations && formik.touched.translations[index]
+						)}
+						errors={
+							formik.errors.translations &&
+							formik.errors.translations[index] &&
+							typeof formik.errors.translations[index] === 'object'
+								? (formik.errors.translations[index] as any)?.value
+								: undefined
+						}
 						required
 						disabled={isDisabled}
-						value={translations[index]?.value || ''}
-						onChange={(e) => {
-							setTranslations((prev) => {
-								const newTranslations = [...prev];
-								newTranslations[index] = {
-									...newTranslations[index],
-									value: e.target.value,
-									language_id: lang.id,
-									language_code: lang.code,
-								};
-								return newTranslations;
-							});
-						}}
 					/>
 				</div>
 			))}
@@ -443,28 +566,22 @@ export const AddOrEditOffcanvas: FC<AddOrEditOffcanvasProps> = ({
 					<SDTextarea
 						maxLength={128}
 						label={`${intl.formatMessage({ id: 'COMMON.PROMPT' })} (${lang.name})`}
-						touched={formik.touched.prompts?.[index]?.prompt}
+						name={`prompts[${index}].prompt`}
+						value={formik.values.prompts[index]?.prompt || ''}
+						onChange={formik.handleChange}
+						onBlur={formik.handleBlur}
+						touched={Boolean(
+							formik.touched.prompts && formik.touched.prompts[index]
+						)}
 						errors={
-							formik.errors.prompts?.[index] as
-								| string
-								| { value?: string }
-								| undefined
+							formik.errors.prompts &&
+							formik.errors.prompts[index] &&
+							typeof formik.errors.prompts[index] === 'object'
+								? (formik.errors.prompts[index] as any)?.prompt
+								: undefined
 						}
-						required
 						disabled={isDisabled}
-						value={prompts[index]?.prompt || ''}
-						onChange={(e) => {
-							setPrompts((prev) => {
-								const newPrompts = [...prev];
-								newPrompts[index] = {
-									...newPrompts[index],
-									prompt: e.target.value,
-									language_id: lang.id,
-									language_code: lang.code,
-								};
-								return newPrompts;
-							});
-						}}
+						required
 					/>
 				</div>
 			))}

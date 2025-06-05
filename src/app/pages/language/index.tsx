@@ -134,7 +134,7 @@ export const LanguagePage: FC = () => {
 					e.stopPropagation();
 				}}>
 				<th className="w-25px ps-3 align-middle ">
-					<div className="form-check form-check-sm  form-check-custom form-check-solid">
+					<div className="form-check form-check-sm form-check-custom form-check-solid">
 						<input
 							className="form-check-input"
 							type="checkbox"
