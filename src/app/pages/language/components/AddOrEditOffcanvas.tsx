@@ -72,7 +72,9 @@ export const AddOrEditOffcanvas: FC<AddOrEditOffcanvasProps> = ({
 				toast.success(
 					intl.formatMessage({
 						id:
-							type === 'edit' ? 'NOTIFICATION.UPDATED' : 'NOTIFICATION.CREATED',
+							type === 'edit'
+								? 'NOTIFICATION.LANGUAGE.UPDATED'
+								: 'NOTIFICATION.LANGUAGE.CREATED',
 					})
 				);
 			} catch (error) {
