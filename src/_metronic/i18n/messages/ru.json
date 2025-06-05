@@ -42,6 +42,9 @@
 	"COMMON.CONFIRM": "Подтвердить",
 	"COMMON.CODE": "Код",
 	"COMMON.PROMPT": "Промпт",
+	"COMMON.PARENT_CATEGORY": "Родительская категория",
+	"COMMON.SELECT": "Выберите опцию",
+	"COMMON.LOADING": "Загрузка...",
 
 	"VALIDATION.STRING_TOO_LONG": "Строка не должна превышать {maxLength} символов.",
 	"VALIDATION.INTEGER": "Значение должно быть целым числом.",
@@ -56,9 +59,22 @@
 	"VALIDATION.MAX_SYMBOLS": "Не должно превышать {count} символов",
 	"VALIDATION.MIN_NUMBER": "Не должно быть меньше {count}",
 	"VALIDATION.MAX_NUMBER": "Должно быть меньше {count}",
+	"VALIDATION.MAX_FILE_SIZE_HINT": "Максимальный размер файла {size}",
+	"VALIDATION.MAX_FILE_SIZE": "Максимальный размер файла не должен превышать {size}",
 	"VALIDATION.REQUIRED": "Обязательное поле",
 	"VALIDATION.MUST_YOUTUBE_URL": "Должно быть ссылка https://www.youtube.com/ в начале",
 
+	"VALIDATION.CATEGORY.ONE_LEVEL_DEPTH": "Разрешена только одноуровневая вложенность категорий",
+  "VALIDATION.CATEGORY.CANNOT_HAVE_PARENT_WITH_SUBCATEGORIES": "Категория с подкатегориями не может иметь родительскую категорию",
+  "VALIDATION.CATEGORY.HAS_SUBCATEGORIES_HINT": "У этой категории есть подкатегории, поэтому она не может иметь родительскую категорию",
+
 	"SUCCESS.LOGIN": "Добро пожаловать в систему!",
-	"SUCCESS.LOGOUT": "Вы успешно вышли из системы."
+	"SUCCESS.LOGOUT": "Вы успешно вышли из системы.",
+
+	"NOTIFICATION.CATEGORY.CREATED": "Категория успешно создана.",
+	"NOTIFICATION.CATEGORY.UPDATED": "Категория успешно обновлена.",
+	"NOTIFICATION.CATEGORY.DELETED": "Категория успешно удалена.",
+	"NOTIFICATION.LANGUAGE.CREATED": "Язык успешно создан.",
+	"NOTIFICATION.LANGUAGE.UPDATED": "Язык успешно обновлен.",
+	"NOTIFICATION.LANGUAGE.DELETED": "Язык успешно удален."
 }
