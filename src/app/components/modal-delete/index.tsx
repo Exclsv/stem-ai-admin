@@ -31,7 +31,7 @@ const SDModalDelete: FC<SDModalDeleteProps> = ({
 	text,
 	url,
 	image,
-	setEditOffcanvasShow,
+	setOffCanvasShow,
 	refetch,
 }) => {
 	const intl = useIntl();
@@ -53,7 +53,7 @@ const SDModalDelete: FC<SDModalDeleteProps> = ({
 			try {
 				await apiClient.delete(`${url}`);
 				resetForm();
-				setEditOffcanvasShow();
+				setOffCanvasShow();
 				onHide();
 				refetch();
 				toast.success(intl.formatMessage({ id: 'NOTIFICATION.DELETED' }));

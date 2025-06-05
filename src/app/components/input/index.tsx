@@ -7,6 +7,7 @@ interface SDInputProps extends InputHTMLAttributes<HTMLInputElement> {
 	errors?: string | { value?: string };
 	required?: boolean;
 	labelChild?: ReactNode;
+	helpText?: string;
 }
 
 export const SDInput: FC<SDInputProps> = ({
@@ -25,6 +26,7 @@ export const SDInput: FC<SDInputProps> = ({
 	max,
 	min,
 	disabled,
+	helpText,
 	...props
 }) => {
 	const errorMessage = typeof errors === 'string' ? errors : errors?.value;
@@ -71,6 +73,9 @@ export const SDInput: FC<SDInputProps> = ({
 				<div id={`${name}-error`} className="text-danger">
 					{errorMessage}
 				</div>
+			)}
+			{helpText && !isError && (
+				<div className="form-text text-muted small mt-1">{helpText}</div>
 			)}
 		</>
 	);
