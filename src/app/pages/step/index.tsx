@@ -2,7 +2,7 @@ import clsx from 'clsx';
 import moment from 'moment';
 import { useIntl } from 'react-intl';
 import { FC, useEffect, useState } from 'react';
-import { useSearchParams, useParams } from 'react-router-dom';
+import { useSearchParams, useParams, useNavigate } from 'react-router-dom';
 import { Content } from '../../../_metronic/layout/components/content';
 import {
 	GenericObject,
@@ -27,7 +27,7 @@ import { useLanguages } from '../../hooks/language/useLanguagiesQuery.ts';
 import { StepTypeResponse } from './types/stepTypes';
 import { useDeleteStep } from '../../hooks/step/useDeleteStep';
 import { toast } from 'react-toastify';
-
+import { ROUTES } from '../../../_metronic/helpers/constants/routes';
 // Расширяем тип шага для добавления полей created_at и updated_at
 type ExtendedStepType = {
 	id: number;
@@ -46,6 +46,7 @@ export const StepPage: FC = () => {
 	const intl = useIntl();
 	const { projectId } = useParams<{ projectId: string }>();
 	const [searchParams, setSearchParams] = useSearchParams();
+	const navigate = useNavigate();
 
 	const [choosenItem, setChoosenItem] = useState<ExtendedStepType | null>(null);
 	const [searchName, setSearchName] = useState<string>('');
@@ -94,19 +95,20 @@ export const StepPage: FC = () => {
 	// TABLE COMPONENT
 	const [tableThead, setTableThead] = useState<TableHeadType[]>([
 		{
-			title: intl.formatMessage({ id: 'COMMON.ORDER' }),
-			key: 'order',
-			isActive: true,
-			disabled: false,
-			className: 'w-100px',
-		},
-		{
 			title: intl.formatMessage({ id: 'COMMON.TITLE' }),
 			key: 'title',
 			isActive: true,
 			disabled: true,
 			className: 'w-250px',
 		},
+		{
+			title: intl.formatMessage({ id: 'COMMON.ORDER' }),
+			key: 'order',
+			isActive: true,
+			disabled: false,
+			className: 'w-100px',
+		},
+
 		{
 			title: intl.formatMessage({ id: 'COMMON.CREATED_AT' }),
 			key: 'created_at',
@@ -147,7 +149,14 @@ export const StepPage: FC = () => {
 				className={clsx({
 					select_without_delete: isSelected,
 					select_with_delete: isSelected,
+					'cursor-pointer': true,
 				})}
+				onClick={(e) => {
+					navigate(
+						ROUTES.QUESTION.replace(':questionGroupId', value.id.toString())
+					);
+					e.stopPropagation();
+				}}
 				onDoubleClick={(e) => {
 					setChoosenItem(value);
 					setOffCanvasShow(true);
@@ -211,7 +220,13 @@ export const StepPage: FC = () => {
 					item.translations && item.translations.length > 0
 						? item.translations[0]?.value
 						: '-';
-				return translation;
+				// Добавляем иконку для указания возможности перехода к вопросам
+				return (
+					<div className="d-flex align-items-center">
+						<KTIcon iconName="right-square" className="fs-4 me-2 text-info" />
+						<span>{translation}</span>
+					</div>
+				);
 			}
 			case 'created_at':
 			case 'updated_at':

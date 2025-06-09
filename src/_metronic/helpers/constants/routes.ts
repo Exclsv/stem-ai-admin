@@ -2,6 +2,6 @@ export const ROUTES = {
 	DASHBOARD: '/dashboard',
 	CATEGORY: '/category',
 	QUESTION_GROUP: '/question-group/:projectId',
-	QUESTION: '/question',
+	QUESTION: '/question/:questionGroupId',
 	LANGUAGE: '/language',
 };

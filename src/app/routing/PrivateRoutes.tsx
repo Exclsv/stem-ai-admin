@@ -10,6 +10,7 @@ import { WithChildren } from '../../_metronic/helpers';
 import { CategoryPage } from '../pages/category';
 import { LanguagePage } from '../pages/language';
 import StepPage from '../pages/step';
+import QuestionPage from '../pages/question';
 
 const PrivateRoutes = () => {
 	const ProfilePage = lazy(() => import('../modules/profile/ProfilePage'));
@@ -42,6 +43,15 @@ const PrivateRoutes = () => {
 					element={
 						<SuspensedView>
 							<StepPage />
+						</SuspensedView>
+					}
+				/>
+
+				<Route
+					path={ROUTES.QUESTION}
+					element={
+						<SuspensedView>
+							<QuestionPage />
 						</SuspensedView>
 					}
 				/>
