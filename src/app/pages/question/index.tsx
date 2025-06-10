@@ -11,6 +11,7 @@ import {
 	KTIcon,
 	KTSVG,
 	TableHeadType,
+	LanguageType,
 } from '../../../_metronic/helpers';
 import {
 	SDButton,
@@ -32,6 +33,7 @@ const QuestionPage: FC = () => {
 	const [searchName, setSearchName] = useState<string>('');
 	const [selectedItems, setSelectedItems] = useState<number[]>([]);
 	const [choosenItem, setChoosenItem] = useState<QuestionType | null>(null);
+	const [languages, setLanguages] = useState<LanguageType[]>([]);
 
 	const [offCanvasShow, setOffCanvasShow] = useState<boolean>(false);
 	const [visibleColumnTable, setVisibleColumnTable] = useState<boolean>(false);
@@ -42,7 +44,7 @@ const QuestionPage: FC = () => {
 		useQuestionsByGroupId(groupId);
 
 	// Получаем список языков
-	const { data: languages } = useLanguages('?page=1&page_size=100');
+	const { data: languagesData } = useLanguages('?page=1&page_size=100');
 
 	// Обработка ошибок API
 	useEffect(() => {
@@ -50,6 +52,13 @@ const QuestionPage: FC = () => {
 			console.error('API Error:', error);
 		}
 	}, [isError, error]);
+
+	// Обработка данных языков
+	useEffect(() => {
+		if (languagesData) {
+			setLanguages(languagesData.data);
+		}
+	}, [languagesData]);
 
 	// Обновление данных при получении с сервера
 	useEffect(() => {

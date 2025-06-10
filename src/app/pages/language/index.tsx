@@ -12,6 +12,7 @@ import {
 	KTIcon,
 	KTSVG,
 	TableHeadType,
+	ApiResponse,
 } from '../../../_metronic/helpers';
 import {
 	SDButton,
@@ -28,6 +29,7 @@ export const LanguagePage: FC = () => {
 
 	const [choosenItem, setChoosenItem] = useState<LanguageType | null>(null);
 	const [searchName, setSearchName] = useState<string>('');
+	const [languages, setLanguages] = useState<LanguageType[]>([]);
 
 	const [offCanvasShow, setOffCanvasShow] = useState<boolean>(false);
 	const [visibleColumnTable, setVisibleColumnTable] = useState<boolean>(false);
@@ -51,6 +53,17 @@ export const LanguagePage: FC = () => {
 
 	const { data, isLoading, isError, error, refetch } =
 		useLanguages(buildQueryParams());
+
+	// Обновление данных при получении ответа API
+	useEffect(() => {
+		if (data) {
+			setLanguages(data.data);
+			// Обновляем информацию о пагинации
+			if (data.pagination) {
+				setTotalPageCount(data.pagination.last_page);
+			}
+		}
+	}, [data]);
 
 	// TABLE COMPONENT
 	const [tableThead, setTableThead] = useState<TableHeadType[]>([
@@ -290,10 +303,12 @@ export const LanguagePage: FC = () => {
 							<SDTable
 								isLoading={isLoading}
 								thead={tableThead}
-								data={data?.length || 0}
+								data={languages?.length || 0}
 								selectedItems={selectedItems.length}
-								onChageSelectedItems={() => changeSelectedItems(data || [])}>
-								{data?.map((item) =>
+								onChageSelectedItems={() =>
+									changeSelectedItems(languages || [])
+								}>
+								{languages?.map((item) =>
 									renderTableRow(item, selectedItems, setSelectedItems)
 								)}
 							</SDTable>

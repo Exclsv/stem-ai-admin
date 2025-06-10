@@ -11,6 +11,7 @@ import {
 	KTIcon,
 	KTSVG,
 	TableHeadType,
+	LanguageType,
 } from '../../../_metronic/helpers';
 import {
 	SDButton,
@@ -32,6 +33,7 @@ export const CategoryPage: FC = () => {
 	const [choosenItem, setChoosenItem] = useState<CategoryType | null>(null);
 	const [searchName, setSearchName] = useState<string>('');
 	const [expandedRows, setExpandedRows] = useState<number[]>([]);
+	const [languages, setLanguages] = useState<LanguageType[]>([]);
 
 	const [offCanvasShow, setOffCanvasShow] = useState<boolean>(false);
 	const [visibleColumnTable, setVisibleColumnTable] = useState<boolean>(false);
@@ -57,33 +59,36 @@ export const CategoryPage: FC = () => {
 	const { data, isLoading, isError, error, refetch } =
 		useCategories(buildQueryParams());
 
-	const { data: languages } = useLanguages('?page=1&page_size=100');
+	const { data: languagesData } = useLanguages('?page=1&page_size=100');
 
 	// Обработка ошибок API
 	useEffect(() => {
 		if (isError && error) {
-			// Здесь можно добавить обработку ошибок, например, показать уведомление
 			console.error('API Error:', error);
 		}
 	}, [isError, error]);
 
-	// Обновление totalPageCount при получении данных
+	// Обработка данных языков
+	useEffect(() => {
+		if (languagesData) {
+			setLanguages(languagesData.data);
+		}
+	}, [languagesData]);
+
+	// Обновление данных и пагинации при получении ответа API
 	useEffect(() => {
 		if (data) {
-			// Предполагаем, что в API есть информация о количестве страниц
-			// Если нет, то можем рассчитать из общего количества элементов
-			// setTotalPageCount(Math.ceil(totalItems / page_size));
-			setCategories(data);
+			setCategories(data.data);
+			// Обновляем информацию о пагинации
+			if (data.pagination) {
+				setTotalPageCount(data.pagination.last_page);
+			}
 		}
-	}, [data, page_size]);
+	}, [data]);
 
 	// Обновление данных при изменении параметров запроса
 	useEffect(() => {
 		refetch();
-
-		// apiClient.get('/question-group/1/').then((res) => {
-		// 	console.log(res);
-		// });
 	}, [page, page_size, search, refetch]);
 
 	// TABLE COMPONENT
@@ -351,7 +356,7 @@ export const CategoryPage: FC = () => {
 
 			case 'sub_categories':
 				if (!item.parent_category) return '-';
-				return item.parent_category || '-'; // parent_category теперь имеет тип number | null
+				return item.parent_category || '-';
 
 			default:
 				return (item[key as keyof CategoryType] as string) || '-';

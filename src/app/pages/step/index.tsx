@@ -1,7 +1,7 @@
 import clsx from 'clsx';
 import moment from 'moment';
 import { useIntl } from 'react-intl';
-import { FC, useEffect, useState } from 'react';
+import { FC, useEffect, useState, useCallback } from 'react';
 import { useSearchParams, useParams, useNavigate } from 'react-router-dom';
 import { Content } from '../../../_metronic/layout/components/content';
 import {
@@ -22,7 +22,10 @@ import {
 	SDVisibleColumnTable,
 } from '../../components';
 import { StepDrawer } from './components';
-import { useStepsByProjectId } from '../../hooks/step';
+import {
+	useStepsByProjectId,
+	useStepsByProjectIdWithPagination,
+} from '../../hooks/step';
 import { useLanguages } from '../../hooks/language/useLanguagiesQuery.ts';
 import { StepTypeResponse } from './types/stepTypes';
 import { useDeleteStep } from '../../hooks/step/useDeleteStep';
@@ -50,6 +53,7 @@ export const StepPage: FC = () => {
 
 	const [choosenItem, setChoosenItem] = useState<ExtendedStepType | null>(null);
 	const [searchName, setSearchName] = useState<string>('');
+	const [steps, setSteps] = useState<ExtendedStepType[]>([]);
 
 	const [offCanvasShow, setOffCanvasShow] = useState<boolean>(false);
 	const [visibleColumnTable, setVisibleColumnTable] = useState<boolean>(false);
@@ -71,10 +75,26 @@ export const StepPage: FC = () => {
 		return <div>{intl.formatMessage({ id: 'COMMON.NO_PROJECT_ID' })}</div>;
 	}
 
+	// Построение параметров запроса
+	const buildQueryParams = useCallback(() => {
+		let query = `?page=${page}&page_size=${page_size}`;
+		if (search) query += `&search=${search}`;
+		return query;
+	}, [page, page_size, search]);
+
+	// Пока используем старый API, но подготовлены функции для нового API с пагинацией
 	const { data, isLoading, isError, error, refetch } = useStepsByProjectId(
 		parseInt(projectId, 10)
 	);
-	const { data: languages } = useLanguages('?page=1&page_size=100');
+
+	// Когда API будет готов, раскомментировать этот код:
+	// const { data, isLoading, isError, error, refetch } = useStepsByProjectIdWithPagination(
+	// 	parseInt(projectId, 10),
+	// 	buildQueryParams()
+	// );
+
+	const { data: languagesData } = useLanguages('?page=1&page_size=100');
+	const [languages, setLanguages] = useState<LanguageType[]>([]);
 
 	// Обработка ошибок API
 	useEffect(() => {
@@ -83,14 +103,32 @@ export const StepPage: FC = () => {
 		}
 	}, [isError, error]);
 
-	// Обновление totalPageCount при получении данных
+	// Обработка данных языков
+	useEffect(() => {
+		if (languagesData) {
+			setLanguages(languagesData.data);
+		}
+	}, [languagesData]);
+
+	// Обновление шагов при получении данных
 	useEffect(() => {
 		if (data) {
-			// В будущем можно будет рассчитать количество страниц
-			// исходя из общего числа элементов
+			// Для старого API:
+			setSteps(data);
 			setTotalPageCount(Math.ceil((data?.length || 0) / page_size));
+
+			// Для нового API с пагинацией:
+			// setSteps(data.data);
+			// if (data.pagination) {
+			//   setTotalPageCount(data.pagination.last_page);
+			// }
 		}
 	}, [data, page_size]);
+
+	// Обновление данных при изменении параметров запроса
+	useEffect(() => {
+		refetch();
+	}, [page, page_size, search, refetch]);
 
 	// TABLE COMPONENT
 	const [tableThead, setTableThead] = useState<TableHeadType[]>([
@@ -179,7 +217,7 @@ export const StepPage: FC = () => {
 					(column) =>
 						column.isActive && (
 							<td key={`${column.key}-${value.id}`} className="align-middle">
-								{renderColumnData(column.key, value, languages)}
+								{renderColumnData(column.key, value)}
 							</td>
 						)
 				)}
@@ -210,8 +248,7 @@ export const StepPage: FC = () => {
 
 	const renderColumnData = (
 		key: string,
-		item: ExtendedStepType,
-		languages?: LanguageType[]
+		item: ExtendedStepType
 	): React.ReactNode => {
 		switch (key) {
 			case 'title': {
@@ -358,32 +395,12 @@ export const StepPage: FC = () => {
 							<SDTable
 								isLoading={isLoading}
 								thead={tableThead}
-								data={data?.length || 0}
+								data={steps?.length || 0}
 								selectedItems={selectedItems.length}
-								onChageSelectedItems={() => {
-									if (data) {
-										// Приводим данные к типу ExtendedStepType
-										const extendedData = data.map((item: any) => ({
-											...item,
-											created_at: item.created_at || undefined,
-											updated_at: item.updated_at || undefined,
-										})) as ExtendedStepType[];
-										changeSelectedItems(extendedData);
-									}
-								}}>
-								{data?.map((item: any) => {
-									// Приводим каждый элемент к типу ExtendedStepType
-									const extendedItem = {
-										...item,
-										created_at: item.created_at || undefined,
-										updated_at: item.updated_at || undefined,
-									} as ExtendedStepType;
-									return renderTableRow(
-										extendedItem,
-										selectedItems,
-										setSelectedItems
-									);
-								})}
+								onChageSelectedItems={() => changeSelectedItems(steps || [])}>
+								{steps?.map((item) =>
+									renderTableRow(item, selectedItems, setSelectedItems)
+								)}
 							</SDTable>
 						</div>
 						<div className="w-100 d-flex justify-content-between px-4 pb-5">
@@ -437,6 +454,7 @@ export const StepPage: FC = () => {
 				onHide={handleCloseDeleteModal}
 				url={`/question-group/${choosenItem?.id}`}
 				refetch={refetch}
+				onConfirm={handleDeleteStep}
 			/>
 		</>
 	);

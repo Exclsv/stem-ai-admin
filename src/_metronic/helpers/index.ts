@@ -13,3 +13,5 @@ export * from './notifyError';
 export * from './types';
 export * from './apiTypes';
 export * from './utils';
+export * from './constants/routes';
+export * from './types/api.types';

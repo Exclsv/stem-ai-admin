@@ -56,7 +56,6 @@ type FormValuesType = {
 	prompts: PromptType[];
 };
 
-// Функция глубокого сравнения объектов для проверки изменений
 const checkFormHasChanged = (
 	initialValues: any,
 	currentValues: any,
@@ -96,15 +95,26 @@ export const AddOrEditOffcanvas: FC<AddOrEditOffcanvasProps> = ({
 	const intl = useIntl();
 	const [showConfirmationModal, setShowConfirmationModal] = useState(false);
 	const [selectedFile, setSelectedFile] = useState<File | null>(null);
+	const [imagePreview, setImagePreview] = useState<string | null>(null);
 	const [formIsDirty, setFormIsDirty] = useState(false);
+	const [categoriesOptions, setCategoriesOptions] = useState<CategoryType[]>(
+		[]
+	);
 	// Сохраняем начальные значения для сравнения
 	const initialFormValuesRef = useRef<FormValuesType | null>(null);
 
 	const { mutateAsync: createCategory } = useCreateCategory();
 	const { mutateAsync: updateCategory } = useUpdateCategory();
-	const { data: categoriesForSelect, isLoading: isCategoriesLoading } =
+	const { data: categoriesData, isLoading: isCategoriesLoading } =
 		useCategoriesForSelect();
 	const queryClient = useQueryClient();
+
+	// Обновление данных о категориях для выпадающего списка
+	useEffect(() => {
+		if (categoriesData) {
+			setCategoriesOptions(categoriesData.data);
+		}
+	}, [categoriesData]);
 
 	// Инициализация схемы валидации с проверкой всех полей
 	const validationSchema = Yup.object().shape({
@@ -120,8 +130,8 @@ export const AddOrEditOffcanvas: FC<AddOrEditOffcanvasProps> = ({
 					if (value === null) return true;
 
 					// Если мы редактируем категорию, проверяем, что она не имеет подкатегорий
-					if (choosenItem && categoriesForSelect) {
-						const hasSubcategories = categoriesForSelect.some(
+					if (choosenItem && categoriesOptions) {
+						const hasSubcategories = categoriesOptions.some(
 							(cat) => cat.parent_category === choosenItem.id
 						);
 
@@ -236,11 +246,8 @@ export const AddOrEditOffcanvas: FC<AddOrEditOffcanvasProps> = ({
 				let imageValue: string | undefined = values.image;
 
 				// Обработка файла изображения
-				if (selectedFile) {
-					// Здесь должна быть логика загрузки файла на сервер
-					// и получение URL или base64 строки
-					// Для примера оставляем значение undefined
-					imageValue = undefined;
+				if (selectedFile && imagePreview) {
+					imageValue = imagePreview;
 				}
 
 				// Проверяем, что translations содержат валидные значения
@@ -308,6 +315,7 @@ export const AddOrEditOffcanvas: FC<AddOrEditOffcanvasProps> = ({
 				// Сбрасываем состояние
 				resetForm();
 				setSelectedFile(null);
+				setImagePreview(null);
 				setFormIsDirty(false);
 
 				// Обновляем данные на странице категорий
@@ -358,6 +366,7 @@ export const AddOrEditOffcanvas: FC<AddOrEditOffcanvasProps> = ({
 
 			// Сбрасываем состояние формы
 			setSelectedFile(null);
+			setImagePreview(choosenItem?.image || null);
 			setFormIsDirty(false);
 
 			console.log('Initialized form with values:', newInitialValues);
@@ -385,16 +394,31 @@ export const AddOrEditOffcanvas: FC<AddOrEditOffcanvasProps> = ({
 
 	const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0] || null;
-		setSelectedFile(file);
+		if (file) {
+			setSelectedFile(file);
+
+			// Конвертация файла в base64
+			const reader = new FileReader();
+			reader.onloadend = () => {
+				const base64String = reader.result as string;
+				setImagePreview(base64String);
+				formik.setFieldValue('image', base64String);
+			};
+			reader.readAsDataURL(file);
+		} else {
+			setSelectedFile(null);
+			setImagePreview(null);
+			formik.setFieldValue('image', undefined);
+		}
 	};
 
 	// Подготовка опций для выпадающего списка категорий
 	const getCategoryOptions = () => {
-		if (!categoriesForSelect) return [];
+		if (!categoriesOptions) return [];
 
 		// Фильтруем категории, чтобы избежать циклической зависимости
 		// и ограничить глубину вложенности одним уровнем
-		return categoriesForSelect
+		return categoriesOptions
 			.filter((category) => {
 				// Если мы находимся в режиме редактирования, исключаем текущую категорию
 				if (choosenItem && category.id === choosenItem.id) return false;
@@ -407,7 +431,7 @@ export const AddOrEditOffcanvas: FC<AddOrEditOffcanvasProps> = ({
 				// 2. Если мы редактируем категорию, которая уже является родительской,
 				// она не может стать подкатегорией
 				if (choosenItem) {
-					const hasSubcategories = categoriesForSelect.some(
+					const hasSubcategories = categoriesOptions.some(
 						(cat) => cat.parent_category === choosenItem.id
 					);
 
@@ -465,6 +489,7 @@ export const AddOrEditOffcanvas: FC<AddOrEditOffcanvasProps> = ({
 		setShowConfirmationModal(false);
 		formik.resetForm();
 		setSelectedFile(null);
+		setImagePreview(null);
 		setFormIsDirty(false);
 		onHide();
 	};
@@ -504,7 +529,28 @@ export const AddOrEditOffcanvas: FC<AddOrEditOffcanvasProps> = ({
 							{ id: 'VALIDATION.MAX_FILE_SIZE_HINT' },
 							{ size: '5MB' }
 						)}
+						accept="image/*"
 					/>
+					{imagePreview && (
+						<div className="mt-3 d-flex justify-content-between align-items-center text-center">
+							<img
+								src={imagePreview}
+								alt="Предпросмотр"
+								className="img-fluid rounded"
+								style={{ maxHeight: '50px' }}
+							/>
+							<button
+								type="button"
+								className="btn btn-sm btn-danger mt-2 h-25"
+								onClick={() => {
+									setSelectedFile(null);
+									setImagePreview(null);
+									formik.setFieldValue('image', undefined);
+								}}>
+								{intl.formatMessage({ id: 'COMMON.DELETE' })}
+							</button>
+						</div>
+					)}
 				</div>
 				<div className="col-6 mb-5">
 					<SDInputSelect
@@ -524,7 +570,7 @@ export const AddOrEditOffcanvas: FC<AddOrEditOffcanvasProps> = ({
 					/>
 					{/* Подсказка для категорий с подкатегориями */}
 					{choosenItem &&
-						categoriesForSelect?.some(
+						categoriesOptions?.some(
 							(cat) => cat.parent_category === choosenItem.id
 						) && (
 							<div className="text-muted fs-7 mt-2">

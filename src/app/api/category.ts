@@ -1,5 +1,5 @@
 import apiClient from '../hooks/apiClient';
-import { CategoryType } from '../../_metronic/helpers';
+import { CategoryType, ApiResponse } from '../../_metronic/helpers';
 
 export interface MutationCategoryType {
 	parent_category: number | null;
@@ -10,9 +10,9 @@ export interface MutationCategoryType {
 
 export const getCategories = async (
 	params: string
-): Promise<CategoryType[]> => {
-	const { data } = await apiClient.get(`/projects${params}`);
-	return data;
+): Promise<ApiResponse<CategoryType>> => {
+	const response = await apiClient.get(`/projects${params}`);
+	return response.data;
 };
 
 export const createCategory = async (category: MutationCategoryType) => {

@@ -1,4 +1,8 @@
-export { useStepsByProjectId, useStepsByProject } from './useStepsQuery';
+export {
+	useStepsByProjectId,
+	useStepsByProject,
+	useStepsByProjectIdWithPagination,
+} from './useStepsQuery';
 export { useCreateStep } from './useCreateStep';
 export { useUpdateStep } from './useUpdateStep';
-export { useDeleteStep } from './useDeleteStep'; 
+export { useDeleteStep } from './useDeleteStep';

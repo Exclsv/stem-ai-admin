@@ -1,5 +1,6 @@
 import apiClient from '../hooks/apiClient';
 import { StepType, StepTypeResponse } from '../pages/step/types/stepTypes';
+import { ApiResponse } from '../../_metronic/helpers';
 
 // Получение всех шагов для проекта (временный API)
 export const getStepsByProjectId = async (projectId: number): Promise<any> => {
@@ -7,6 +8,17 @@ export const getStepsByProjectId = async (projectId: number): Promise<any> => {
 		`/projects/${projectId}/question-groups/`
 	);
 	return data.question_groups || [];
+};
+
+// Получение всех шагов для проекта с пагинацией
+export const getStepsByProjectIdWithPagination = async (
+	projectId: number,
+	params: string
+): Promise<ApiResponse<StepTypeResponse>> => {
+	const response = await apiClient.get(
+		`/projects/${projectId}/question-groups/${params}`
+	);
+	return response.data;
 };
 
 // Получение всех шагов для проекта (будущий API)

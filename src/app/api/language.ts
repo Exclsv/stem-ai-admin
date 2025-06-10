@@ -1,9 +1,11 @@
 import apiClient from '../hooks/apiClient';
-import { LanguageType } from '../../_metronic/helpers';
+import { LanguageType, ApiResponse } from '../../_metronic/helpers';
 
-export const getLanguages = async (params: string): Promise<LanguageType[]> => {
-	const { data } = await apiClient.get(`/languages${params}`);
-	return data;
+export const getLanguages = async (
+	params: string
+): Promise<ApiResponse<LanguageType>> => {
+	const response = await apiClient.get(`/languages${params}`);
+	return response.data;
 };
 
 export const createLanguage = async (
