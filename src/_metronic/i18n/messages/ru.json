@@ -45,6 +45,19 @@
 	"COMMON.PARENT_CATEGORY": "Родительская категория",
 	"COMMON.SELECT": "Выберите опцию",
 	"COMMON.LOADING": "Загрузка...",
+	"COMMON.ORDER": "Порядок",
+	"COMMON.OPTIONS": "Опции",
+	"COMMON.ANSWER": "Ответ",
+	"COMMON.ANSWERS": "Ответы",
+	"COMMON.QUESTIONS": "Вопросы",
+	"COMMON.QUESTION": "Вопрос",
+	"COMMON.PROMPTS": "Промпты",
+
+	"AUTH.CHANGE_PASSWORD": "Изменить пароль",
+	"AUTH.CURRENT_PASSWORD": "Текущий пароль",
+	"AUTH.NEW_PASSWORD": "Новый пароль",
+	"AUTH.CONFIRM_PASSWORD": "Подтвердить пароль",
+	"AUTH.PASSWORDS_NOT_MATCH": "Пароли не совпадают",
 
 	"VALIDATION.STRING_TOO_LONG": "Строка не должна превышать {maxLength} символов.",
 	"VALIDATION.INTEGER": "Значение должно быть целым числом.",
@@ -65,11 +78,17 @@
 	"VALIDATION.MUST_YOUTUBE_URL": "Должно быть ссылка https://www.youtube.com/ в начале",
 
 	"VALIDATION.CATEGORY.ONE_LEVEL_DEPTH": "Разрешена только одноуровневая вложенность категорий",
-  "VALIDATION.CATEGORY.CANNOT_HAVE_PARENT_WITH_SUBCATEGORIES": "Категория с подкатегориями не может иметь родительскую категорию",
-  "VALIDATION.CATEGORY.HAS_SUBCATEGORIES_HINT": "У этой категории есть подкатегории, поэтому она не может иметь родительскую категорию",
+	"VALIDATION.CATEGORY.CANNOT_HAVE_PARENT_WITH_SUBCATEGORIES": "Категория с подкатегориями не может иметь родительскую категорию",
+	"VALIDATION.CATEGORY.HAS_SUBCATEGORIES_HINT": "У этой категории есть подкатегории, поэтому она не может иметь родительскую категорию",
 
 	"SUCCESS.LOGIN": "Добро пожаловать в систему!",
 	"SUCCESS.LOGOUT": "Вы успешно вышли из системы.",
+
+	"QUESTION.TYPE.BOOLEAN": "Булевая",
+	"QUESTION.TYPE.SELECT": "Выбор",
+	"QUESTION.TYPE.FREE": "Свободный ответ",
+	"QUESTION.BOOLEAN_INFO": "Для типа вопроса Да/Нет должно быть ровно 2 варианта ответа",
+	"QUESTION.SELECT_INFO": "Для типа вопроса с выбором должно быть от {min} до {max} вариантов ответа",
 
 	"NOTIFICATION.CATEGORY.CREATED": "Категория успешно создана.",
 	"NOTIFICATION.CATEGORY.UPDATED": "Категория успешно обновлена.",
