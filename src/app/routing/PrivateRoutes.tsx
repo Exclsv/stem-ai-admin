@@ -25,8 +25,8 @@ const PrivateRoutes = () => {
 	return (
 		<Routes>
 			<Route element={<MasterLayout />}>
-				<Route path="auth/*" element={<Navigate to={ROUTES.DASHBOARD} />} />
-				<Route path={ROUTES.DASHBOARD} element={<DashboardWrapper />} />
+				<Route path="auth/*" element={<Navigate to={ROUTES.CATEGORY} />} />
+				<Route path="/" element={<Navigate to={ROUTES.CATEGORY} />} />
 
 				<Route path="menu-test" element={<MenuTestPage />} />
 				<Route

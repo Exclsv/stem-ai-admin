@@ -4,6 +4,7 @@ import { PrivateRoutes } from "./PrivateRoutes";
 import { ErrorsPage } from "../modules/errors/ErrorsPage";
 import { Logout, AuthPage, useAuth } from "../modules/auth";
 import { Routes, Route, BrowserRouter, Navigate } from "react-router-dom";
+import { ROUTES } from "../../_metronic/helpers";
 
 const { BASE_URL } = import.meta.env;
 
@@ -18,7 +19,7 @@ const AppRoutes: FC = () => {
           {currentUser ? (
             <>
               <Route path="/*" element={<PrivateRoutes />} />
-              <Route index element={<Navigate to="/dashboard" />} />
+              <Route index element={<Navigate to={ROUTES.CATEGORY} />} />
             </>
           ) : (
             <>
