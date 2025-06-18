@@ -93,7 +93,7 @@ export const StepPage: FC = () => {
 	// 	buildQueryParams()
 	// );
 
-	const { data: languagesData } = useLanguages('?page=1&page_size=100');
+	const { data: languagesData } = useLanguages('?page=1&page_size=10');
 	const [languages, setLanguages] = useState<LanguageType[]>([]);
 
 	// Обработка ошибок API

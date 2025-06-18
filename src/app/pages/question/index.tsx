@@ -44,7 +44,7 @@ const QuestionPage: FC = () => {
 		useQuestionsByGroupId(groupId);
 
 	// Получаем список языков
-	const { data: languagesData } = useLanguages('?page=1&page_size=100');
+	const { data: languagesData } = useLanguages('?page=1&page_size=10');
 
 	// Обработка ошибок API
 	useEffect(() => {

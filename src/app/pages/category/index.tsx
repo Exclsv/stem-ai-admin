@@ -23,7 +23,6 @@ import {
 } from '../../components';
 import { useCategories } from '../../hooks/category/useCategoriesQuery.ts';
 import { useLanguages } from '../../hooks/language/useLanguagiesQuery.ts';
-import apiClient from '../../hooks/apiClient.ts';
 
 export const CategoryPage: FC = () => {
 	const intl = useIntl();
@@ -59,7 +58,7 @@ export const CategoryPage: FC = () => {
 	const { data, isLoading, isError, error, refetch } =
 		useCategories(buildQueryParams());
 
-	const { data: languagesData } = useLanguages('?page=1&page_size=100');
+	const { data: languagesData } = useLanguages('?page=1&page_size=10');
 
 	// Обработка ошибок API
 	useEffect(() => {
