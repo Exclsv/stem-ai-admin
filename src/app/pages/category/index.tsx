@@ -174,7 +174,10 @@ export const CategoryPage: FC = () => {
 			select_without_delete: isSelected && value.is_delete,
 			select_with_delete: isSelected && !value.is_delete,
 			'fw-bold': !isSubRow && hasSubcategories,
-			'cursor-pointer': (!isSubRow && hasSubcategories) || isSubRow,
+			'cursor-pointer':
+				(!isSubRow && hasSubcategories) ||
+				(!isSubRow && !hasSubcategories) ||
+				isSubRow,
 			'subcategory-item-row': isSubRow,
 			'border-bottom-0': !isSubRow && isExpanded && hasSubcategories,
 		});
@@ -182,11 +185,21 @@ export const CategoryPage: FC = () => {
 		// Обработчик клика на строку для раскрытия подкатегорий или перехода к шагам
 		const handleRowClick = () => {
 			if (!isSubRow && hasSubcategories) {
+				// Если родительская категория с подкатегориями - раскрываем/скрываем подкатегории
 				toggleRowExpansion();
+			} else if (!isSubRow && !hasSubcategories) {
+				// Если родительская категория без подкатегорий - переходим к группам вопросов
+				navigate(`/question-group/${value.id}`);
 			} else if (isSubRow) {
-				// Если кликнули на подкатегорию, переходим на страницу шагов
+				// Если подкатегория - переходим к группам вопросов
 				navigate(`/question-group/${value.id}`);
 			}
+		};
+
+		// Функция для перехода к группам вопросов
+		const handleNavigateToSteps = (e: React.MouseEvent<HTMLButtonElement>) => {
+			e.stopPropagation();
+			navigate(`/question-group/${value.id}`);
 		};
 
 		return (
@@ -247,6 +260,14 @@ export const CategoryPage: FC = () => {
 							)
 					)}
 					<td className="d-flex justify-content-end align-middle">
+						{!isSubRow && hasSubcategories && (
+							<SDButton
+								className="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1"
+								onClick={handleNavigateToSteps}>
+								<KTIcon iconName="arrow-right" className="fs-3" />
+							</SDButton>
+						)}
+
 						<SDButton
 							className="btn btn-icon btn-bg-light btn-active-color-danger btn-sm me-1"
 							onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
