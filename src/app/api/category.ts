@@ -3,7 +3,7 @@ import { CategoryType, ApiResponse } from '../../_metronic/helpers';
 
 export interface MutationCategoryType {
 	parent_category: number | null;
-	image?: string;
+	image?: string | null;
 	translations: { language_id: number; language_code: string; value: string }[];
 	prompts: { language_id: number; language_code: string; prompt: string }[];
 }

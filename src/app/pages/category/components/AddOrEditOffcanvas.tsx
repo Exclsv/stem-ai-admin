@@ -51,7 +51,7 @@ type PromptType = {
 
 type FormValuesType = {
 	parent_category: number | null;
-	image?: string;
+	image?: string | null;
 	translations: TranslationType[];
 	prompts: PromptType[];
 };
@@ -243,7 +243,7 @@ export const AddOrEditOffcanvas: FC<AddOrEditOffcanvasProps> = ({
 				const isEdit = type === 'edit' && choosenItem?.id;
 
 				// Подготовка данных для отправки на сервер
-				let imageValue: string | undefined = values.image;
+				let imageValue: string | null | undefined = values.image;
 
 				// Обработка файла изображения
 				if (selectedFile && imagePreview) {
@@ -545,7 +545,7 @@ export const AddOrEditOffcanvas: FC<AddOrEditOffcanvasProps> = ({
 								onClick={() => {
 									setSelectedFile(null);
 									setImagePreview(null);
-									formik.setFieldValue('image', undefined);
+									formik.setFieldValue('image', '');
 								}}>
 								{intl.formatMessage({ id: 'COMMON.DELETE' })}
 							</button>
