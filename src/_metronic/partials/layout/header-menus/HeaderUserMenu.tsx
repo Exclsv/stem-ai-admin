@@ -25,40 +25,37 @@ const HeaderUserMenu: FC = () => {
 				data-kt-menu="true">
 				<div className="menu-item px-3">
 					<div className="menu-content d-flex align-items-center px-3">
-						<div className="symbol symbol-50px me-5">
+						{/* <div className="symbol symbol-50px me-5">
 							<img alt="Logo" src={toAbsoluteUrl('media/avatars/300-3.jpg')} />
+						</div> */}
+						{/* User initials */}
+						<div className="symbol symbol-50px me-5">
+							<span className="symbol-label fs-3 fw-bolder text-white bg-primary rounded-circle">
+								{currentUser?.username.slice(0, 2).toUpperCase()}
+							</span>
 						</div>
-
 						<div className="d-flex flex-column">
 							<div className="fw-bolder d-flex align-items-center fs-5">
-								{currentUser?.first_name} {currentUser?.first_name}
-								<span className="badge badge-light-success fw-bolder fs-8 px-2 py-1 ms-2">
-									Pro
-								</span>
+								{currentUser?.username}
 							</div>
-							<a
-								href="#"
-								className="fw-bold text-muted text-hover-primary fs-7">
-								{currentUser?.email}
-							</a>
 						</div>
 					</div>
 				</div>
 
 				<div className="separator my-2"></div>
 
-				<div className="menu-item px-5">
+				{/* <div className="menu-item px-5">
 					<Link to={'/crafted/pages/profile'} className="menu-link px-5">
 						My Profile
 					</Link>
-				</div>
+				</div> */}
 
 				{/* Change password */}
-				<div className="menu-item px-5">
+				{/* <div className="menu-item px-5">
 					<a onClick={handleChangePasswordClick} className="menu-link px-5">
 						Изменить пароль
 					</a>
-				</div>
+				</div> */}
 
 				{/* <div className='menu-item px-5'>
           <a href='#' className='menu-link px-5'>
@@ -137,17 +134,17 @@ const HeaderUserMenu: FC = () => {
 
         <div className='separator my-2'></div> */}
 
-				<Languages />
+				{/* <Languages /> */}
 
-				<div className="menu-item px-5 my-1">
+				{/* <div className="menu-item px-5 my-1">
 					<Link to="/crafted/account/settings" className="menu-link px-5">
 						Account Settings
 					</Link>
-				</div>
+				</div> */}
 
 				<div className="menu-item px-5">
 					<a onClick={logout} className="menu-link px-5">
-						Sign Out
+						Выйти
 					</a>
 				</div>
 			</div>
