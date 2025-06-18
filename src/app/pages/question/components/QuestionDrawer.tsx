@@ -58,7 +58,7 @@ type OptionType = {
 	translations: OptionTranslationType[];
 };
 
-type QuestionTypeEnum = 'boolean' | 'select' | 'free';
+type QuestionTypeEnum = 'boolean' | 'select' | 'free_answer';
 
 type FormValuesType = {
 	group: number;
@@ -122,7 +122,7 @@ export const QuestionDrawer: FC<QuestionDrawerProps> = ({
 			intl.formatMessage({ id: 'VALIDATION.REQUIRED' }, { field: 'Group' })
 		),
 		type: Yup.string()
-			.oneOf(['boolean', 'select', 'free'])
+			.oneOf(['boolean', 'select', 'free_answer'])
 			.required(
 				intl.formatMessage({ id: 'VALIDATION.REQUIRED' }, { field: 'Type' })
 			),
@@ -327,7 +327,7 @@ export const QuestionDrawer: FC<QuestionDrawerProps> = ({
 				};
 
 				// Добавляем варианты ответов только для типов boolean и select
-				if (values.type !== 'free') {
+				if (values.type !== 'free_answer') {
 					(requestData as any).options = values.options.map((option) => ({
 						translations: option.translations
 							.filter((t) => t.value.trim() !== '')
@@ -502,7 +502,7 @@ export const QuestionDrawer: FC<QuestionDrawerProps> = ({
 		}
 
 		// Проверяем варианты ответов для boolean и select
-		if (values.type !== 'free') {
+		if (values.type !== 'free_answer') {
 			// Для типов boolean и select должны быть варианты ответов
 			if (!values.options || values.options.length === 0) {
 				toast.error(
@@ -618,14 +618,14 @@ export const QuestionDrawer: FC<QuestionDrawerProps> = ({
 	const typeToValueMap: Record<QuestionTypeEnum, number> = {
 		boolean: 1,
 		select: 2,
-		free: 3,
+		free_answer: 3,
 	};
 
 	// Маппинг значений из селекта в тип вопроса
 	const valueToTypeMap: Record<number, QuestionTypeEnum> = {
 		1: 'boolean',
 		2: 'select',
-		3: 'free',
+		3: 'free_answer',
 	};
 
 	return (
@@ -685,7 +685,7 @@ export const QuestionDrawer: FC<QuestionDrawerProps> = ({
 											})),
 										}))
 									);
-								} else if (newType === 'free') {
+								} else if (newType === 'free_answer') {
 									// Для типа free очищаем варианты ответов
 									formik.setFieldValue('options', []);
 								}
@@ -759,7 +759,7 @@ export const QuestionDrawer: FC<QuestionDrawerProps> = ({
 			))}
 
 			{/* Варианты ответов (только для типов boolean и select) */}
-			{formik.values.type !== 'free' && (
+			{formik.values.type !== 'free_answer' && (
 				<>
 					<h4 className="fw-bold py-3 mb-2 d-flex justify-content-between align-items-center">
 						<span>

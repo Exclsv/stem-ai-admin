@@ -19,7 +19,7 @@ export interface OptionType {
 
 export interface QuestionMutationType {
 	group: number;
-	type: 'boolean' | 'select' | 'free';
+	type: 'boolean' | 'select' | 'free_answer';
 	prompts: PromptType[];
 	translations: TranslationType[];
 	options?: OptionType[];

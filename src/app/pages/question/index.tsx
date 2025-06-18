@@ -178,7 +178,7 @@ const QuestionPage: FC = () => {
 						return intl.formatMessage({ id: 'QUESTION.TYPE.BOOLEAN' });
 					case 'select':
 						return intl.formatMessage({ id: 'QUESTION.TYPE.SELECT' });
-					case 'free':
+					case 'free_answer':
 						return intl.formatMessage({ id: 'QUESTION.TYPE.FREE' });
 					default:
 						return item.type;
@@ -186,7 +186,7 @@ const QuestionPage: FC = () => {
 			}
 			case 'options': {
 				// Показываем количество вариантов ответа
-				if (item.type === 'free') {
+				if (item.type === 'free_answer') {
 					return intl.formatMessage({ id: 'QUESTION.NO_OPTIONS' });
 				}
 				return item.options ? `${item.options.length}` : '0';

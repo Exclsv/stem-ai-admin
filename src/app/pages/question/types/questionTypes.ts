@@ -18,7 +18,7 @@ interface QuestionOptionType {
 export interface QuestionType {
 	id: number;
 	group: number;
-	type: 'boolean' | 'select' | 'free';
+	type: 'boolean' | 'select' | 'free_answer';
 	translations: QuestionTranslationType[];
 	options: QuestionOptionType[];
 }
