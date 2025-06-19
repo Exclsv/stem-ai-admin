@@ -56,6 +56,7 @@ type OptionTranslationType = {
 type OptionType = {
 	id?: number;
 	translations: OptionTranslationType[];
+	bool?: boolean; // Для типа вопроса "boolean"
 };
 
 type QuestionTypeEnum = 'boolean' | 'select' | 'free_answer';
@@ -245,19 +246,21 @@ export const QuestionDrawer: FC<QuestionDrawerProps> = ({
 				return {
 					id: option.id,
 					translations: optionTranslations,
+					bool: (option as any).bool, // Добавляем поле bool если оно существует
 				};
 			});
 		} else {
 			// Создаем начальные варианты ответов в зависимости от типа вопроса
 			if (questionType === 'boolean' && languages) {
-				// Для типа boolean создаем два пустых варианта ответа
-				initialOptions = Array.from({ length: 2 }).map(() => ({
+				// Для типа boolean создаем два варианта ответа: один с bool: false, другой с bool: true
+				initialOptions = Array.from({ length: 2 }).map((_, index) => ({
 					translations: languages.map((lang) => ({
 						language_id: lang.id,
 						language_code: lang.code,
 						value: '',
 						isRequired: true,
 					})),
+					bool: index === 1, // Первый вариант - false, второй - true
 				}));
 			} else if (questionType === 'select' && languages) {
 				// Для типа select создаем три пустых варианта ответа
@@ -328,15 +331,24 @@ export const QuestionDrawer: FC<QuestionDrawerProps> = ({
 
 				// Добавляем варианты ответов только для типов boolean и select
 				if (values.type !== 'free_answer') {
-					(requestData as any).options = values.options.map((option) => ({
-						translations: option.translations
-							.filter((t) => t.value.trim() !== '')
-							.map(({ language_id, language_code, value }) => ({
-								language_id,
-								language_code,
-								value,
-							})),
-					}));
+					(requestData as any).options = values.options.map((option) => {
+						const optionData: any = {
+							translations: option.translations
+								.filter((t) => t.value.trim() !== '')
+								.map(({ language_id, language_code, value }) => ({
+									language_id,
+									language_code,
+									value,
+								})),
+						};
+
+						// Добавляем поле bool только для типа boolean
+						if (values.type === 'boolean' && option.bool !== undefined) {
+							optionData.bool = option.bool;
+						}
+
+						return optionData;
+					});
 				}
 
 				if (isEdit) {
@@ -410,6 +422,23 @@ export const QuestionDrawer: FC<QuestionDrawerProps> = ({
 		}
 	}, [formik.values]);
 
+	// Обработчик изменения поля bool для типа boolean
+	const handleBoolToggle = (optionIndex: number, newValue: boolean) => {
+		if (formik.values.type !== 'boolean') return;
+
+		const updatedOptions = formik.values.options.map((option, index) => {
+			if (index === optionIndex) {
+				// Устанавливаем новое значение для выбранного варианта
+				return { ...option, bool: newValue };
+			} else {
+				// Устанавливаем противоположное значение для остальных вариантов
+				return { ...option, bool: !newValue };
+			}
+		});
+
+		formik.setFieldValue('options', updatedOptions);
+	};
+
 	// Добавление нового варианта ответа
 	const handleAddOption = () => {
 		if (!languages || formik.values.options.length >= 6) return;
@@ -422,6 +451,11 @@ export const QuestionDrawer: FC<QuestionDrawerProps> = ({
 				isRequired: true,
 			})),
 		};
+
+		// Добавляем поле bool только для типа boolean
+		if (formik.values.type === 'boolean') {
+			newOption.bool = false; // По умолчанию false для новых вариантов
+		}
 
 		formik.setFieldValue('options', [...formik.values.options, newOption]);
 	};
@@ -567,6 +601,24 @@ export const QuestionDrawer: FC<QuestionDrawerProps> = ({
 				);
 				return false;
 			}
+
+			// Дополнительная валидация для типа boolean
+			if (values.type === 'boolean') {
+				const trueOptionsCount = values.options.filter(
+					(option) => option.bool === true
+				).length;
+
+				if (trueOptionsCount !== 1) {
+					toast.error(
+						intl.formatMessage({
+							id: 'VALIDATION.BOOLEAN_ONE_TRUE_ANSWER',
+							defaultMessage:
+								'Для boolean вопроса должен быть выбран ровно один правильный ответ',
+						})
+					);
+					return false;
+				}
+			}
 		}
 
 		return true;
@@ -660,16 +712,17 @@ export const QuestionDrawer: FC<QuestionDrawerProps> = ({
 
 								// Обновляем варианты ответов в зависимости от типа
 								if (newType === 'boolean' && languages) {
-									// Для типа boolean создаем два пустых варианта ответа
+									// Для типа boolean создаем два варианта ответа с bool: false и bool: true
 									formik.setFieldValue(
 										'options',
-										Array.from({ length: 2 }).map(() => ({
+										Array.from({ length: 2 }).map((_, index) => ({
 											translations: languages.map((lang) => ({
 												language_id: lang.id,
 												language_code: lang.code,
 												value: '',
 												isRequired: true,
 											})),
+											bool: index === 1, // Первый вариант - false, второй - true
 										}))
 									);
 								} else if (newType === 'select' && languages) {
@@ -842,6 +895,36 @@ export const QuestionDrawer: FC<QuestionDrawerProps> = ({
 									/>
 								</div>
 							))}
+
+							{/* Поле bool только для типа boolean */}
+							{formik.values.type === 'boolean' && (
+								<div className="col-12 mb-3">
+									<div className="form-check form-switch">
+										<input
+											className="form-check-input"
+											type="checkbox"
+											id={`option-${optionIndex}-bool`}
+											checked={
+												formik.values.options[optionIndex]?.bool || false
+											}
+											onChange={(e) => {
+												e.stopPropagation();
+												handleBoolToggle(optionIndex, e.target.checked);
+											}}
+											onBlur={formik.handleBlur}
+											disabled={isDisabled}
+										/>
+										<label
+											className="form-check-label"
+											htmlFor={`option-${optionIndex}-bool`}>
+											{intl.formatMessage({
+												id: 'COMMON.IS_TRUE_ANSWER',
+												defaultMessage: 'Правильный ответ',
+											})}
+										</label>
+									</div>
+								</div>
+							)}
 						</div>
 					))}
 

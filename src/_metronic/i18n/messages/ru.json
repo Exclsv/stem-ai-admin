@@ -52,6 +52,7 @@
 	"COMMON.QUESTIONS": "Вопросы",
 	"COMMON.QUESTION": "Вопрос",
 	"COMMON.PROMPTS": "Промпты",
+	"COMMON.IS_TRUE_ANSWER": "Правильный ответ",
 
 	"AUTH.CHANGE_PASSWORD": "Изменить пароль",
 	"AUTH.CURRENT_PASSWORD": "Текущий пароль",
@@ -76,6 +77,7 @@
 	"VALIDATION.MAX_FILE_SIZE": "Максимальный размер файла не должен превышать {size}",
 	"VALIDATION.REQUIRED": "Обязательное поле",
 	"VALIDATION.MUST_YOUTUBE_URL": "Должно быть ссылка https://www.youtube.com/ в начале",
+	"VALIDATION.BOOLEAN_ONE_TRUE_ANSWER": "Для boolean вопроса должен быть выбран ровно один правильный ответ",
 
 	"VALIDATION.CATEGORY.ONE_LEVEL_DEPTH": "Разрешена только одноуровневая вложенность категорий",
 	"VALIDATION.CATEGORY.CANNOT_HAVE_PARENT_WITH_SUBCATEGORIES": "Категория с подкатегориями не может иметь родительскую категорию",
@@ -89,11 +91,13 @@
 	"QUESTION.TYPE.FREE": "Свободный ответ",
 	"QUESTION.BOOLEAN_INFO": "Для типа вопроса Да/Нет должно быть ровно 2 варианта ответа",
 	"QUESTION.SELECT_INFO": "Для типа вопроса с выбором должно быть от {min} до {max} вариантов ответа",
+	"QUESTION.NO_OPTIONS": "Нет вариантов ответа",
 
 	"NOTIFICATION.CATEGORY.CREATED": "Категория успешно создана.",
 	"NOTIFICATION.CATEGORY.UPDATED": "Категория успешно обновлена.",
 	"NOTIFICATION.CATEGORY.DELETED": "Категория успешно удалена.",
 	"NOTIFICATION.LANGUAGE.CREATED": "Язык успешно создан.",
 	"NOTIFICATION.LANGUAGE.UPDATED": "Язык успешно обновлен.",
-	"NOTIFICATION.LANGUAGE.DELETED": "Язык успешно удален."
+	"NOTIFICATION.LANGUAGE.DELETED": "Язык успешно удален.",
+	"NOTIFICATION.QUESTION.CREATED": "Вопрос успешно создан."
 }
