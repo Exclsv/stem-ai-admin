@@ -15,7 +15,10 @@ export const createLanguage = async (
 	return data;
 };
 
-export const updateLanguage = (id: number, data: Partial<LanguageType>) => {
+export const updateLanguage = async (
+	id: number,
+	data: Partial<LanguageType>
+) => {
 	return apiClient.put(`/languages/${id}/`, data).then((res) => res.data);
 };
 

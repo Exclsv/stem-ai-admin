@@ -159,36 +159,54 @@ export const AddOrEditOffcanvas: FC<AddOrEditOffcanvasProps> = ({
 		}),
 		translations: Yup.array().of(
 			Yup.object().shape({
-				value: Yup.string().test({
-					name: 'is-required',
-					message: intl.formatMessage(
-						{ id: 'VALIDATION.REQUIRED' },
-						{ field: 'Name' }
-					),
-					test: function (value) {
-						const { parent } = this;
-						return (
-							!parent.isRequired || (value !== undefined && value.trim() !== '')
-						);
-					},
-				}),
+				value: Yup.string()
+					.max(
+						500,
+						intl.formatMessage(
+							{ id: 'VALIDATION.MAX_LENGTH' },
+							{ field: 'Name', max: 500 }
+						)
+					)
+					.test({
+						name: 'is-required',
+						message: intl.formatMessage(
+							{ id: 'VALIDATION.REQUIRED' },
+							{ field: 'Name' }
+						),
+						test: function (value) {
+							const { parent } = this;
+							return (
+								!parent.isRequired ||
+								(value !== undefined && value.trim() !== '')
+							);
+						},
+					}),
 			})
 		),
 		prompts: Yup.array().of(
 			Yup.object().shape({
-				prompt: Yup.string().test({
-					name: 'is-required',
-					message: intl.formatMessage(
-						{ id: 'VALIDATION.REQUIRED' },
-						{ field: 'Prompt' }
-					),
-					test: function (value) {
-						const { parent } = this;
-						return (
-							!parent.isRequired || (value !== undefined && value.trim() !== '')
-						);
-					},
-				}),
+				prompt: Yup.string()
+					.max(
+						5000,
+						intl.formatMessage(
+							{ id: 'VALIDATION.MAX_LENGTH' },
+							{ field: 'Prompt', max: 5000 }
+						)
+					)
+					.test({
+						name: 'is-required',
+						message: intl.formatMessage(
+							{ id: 'VALIDATION.REQUIRED' },
+							{ field: 'Prompt' }
+						),
+						test: function (value) {
+							const { parent } = this;
+							return (
+								!parent.isRequired ||
+								(value !== undefined && value.trim() !== '')
+							);
+						},
+					}),
 			})
 		),
 	});
@@ -516,7 +534,7 @@ export const AddOrEditOffcanvas: FC<AddOrEditOffcanvasProps> = ({
 				)
 			}>
 			<div className="row">
-				<div className="col-6 mb-5">
+				<div className="mb-5">
 					<SDInput
 						type="file"
 						maxLength={128}
@@ -552,7 +570,7 @@ export const AddOrEditOffcanvas: FC<AddOrEditOffcanvasProps> = ({
 						</div>
 					)}
 				</div>
-				<div className="col-6 mb-5">
+				<div className="mb-5">
 					<SDInputSelect
 						label={intl.formatMessage({ id: 'COMMON.PARENT_CATEGORY' })}
 						options={getCategoryOptions()}
@@ -583,9 +601,8 @@ export const AddOrEditOffcanvas: FC<AddOrEditOffcanvasProps> = ({
 			</div>
 
 			{languages?.map((lang, index) => (
-				<div key={`translation-${lang.id}`} className="col-6 mb-3">
+				<div key={`translation-${lang.id}`} className="mb-3">
 					<SDInput
-						maxLength={128}
 						label={`${intl.formatMessage({ id: 'COMMON.NAME' })} (${lang.name})`}
 						name={`translations[${index}].value`}
 						value={formik.values.translations[index]?.value || ''}
@@ -603,14 +620,15 @@ export const AddOrEditOffcanvas: FC<AddOrEditOffcanvasProps> = ({
 						}
 						required
 						disabled={isDisabled}
+						showCharCounter
+						maxLength={500}
 					/>
 				</div>
 			))}
 
 			{languages?.map((lang, index) => (
-				<div key={`prompt-${lang.id}`} className="col-6 mb-3">
+				<div key={`prompt-${lang.id}`} className="mb-3">
 					<SDTextarea
-						maxLength={128}
 						label={`${intl.formatMessage({ id: 'COMMON.PROMPT' })} (${lang.name})`}
 						name={`prompts[${index}].prompt`}
 						value={formik.values.prompts[index]?.prompt || ''}
@@ -628,6 +646,8 @@ export const AddOrEditOffcanvas: FC<AddOrEditOffcanvasProps> = ({
 						}
 						disabled={isDisabled}
 						required
+						showCharCounter
+						maxLength={5000}
 					/>
 				</div>
 			))}

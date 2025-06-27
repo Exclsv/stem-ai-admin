@@ -99,5 +99,6 @@
 	"NOTIFICATION.LANGUAGE.CREATED": "Язык успешно создан.",
 	"NOTIFICATION.LANGUAGE.UPDATED": "Язык успешно обновлен.",
 	"NOTIFICATION.LANGUAGE.DELETED": "Язык успешно удален.",
-	"NOTIFICATION.QUESTION.CREATED": "Вопрос успешно создан."
+	"NOTIFICATION.QUESTION.CREATED": "Вопрос успешно создан.",
+	"NOTIFICATION.DELETED": "Успешно удалено"
 }

@@ -43,7 +43,7 @@ export function Login() {
 				const userInfo = {
 					id: 1,
 					username: 'admin',
-					password: 'admin1254',
+					password: 'admin12345',
 					email: 'admin@gmail.com',
 					first_name: 'admin',
 					last_name: 'admin',

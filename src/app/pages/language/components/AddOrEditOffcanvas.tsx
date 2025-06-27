@@ -43,10 +43,10 @@ export const AddOrEditOffcanvas: FC<AddOrEditOffcanvasProps> = ({
 	const validationSchema = Yup.object({
 		name: Yup.string()
 			.required(intl.formatMessage({ id: 'VALIDATION.REQUIRED' }))
-			.max(24, intl.formatMessage({ id: 'VALIDATION.MAX_SYMBOLS' })),
+			.max(50, intl.formatMessage({ id: 'VALIDATION.MAX_SYMBOLS' })),
 		code: Yup.string()
 			.required(intl.formatMessage({ id: 'VALIDATION.REQUIRED' }))
-			.max(255, intl.formatMessage({ id: 'VALIDATION.MAX_SYMBOLS' })),
+			.max(10, intl.formatMessage({ id: 'VALIDATION.MAX_SYMBOLS' })),
 	});
 
 	const initialValues = {
@@ -109,7 +109,7 @@ export const AddOrEditOffcanvas: FC<AddOrEditOffcanvasProps> = ({
 			title={intl.formatMessage({
 				id: type === 'add' ? 'COMMON.ADD' : 'COMMON.EDIT',
 			})}
-			width={'w-25'}
+			width={'w-30'}
 			onClick={() => formik.handleSubmit()}
 			dropdownItems={
 				<li>
@@ -120,24 +120,26 @@ export const AddOrEditOffcanvas: FC<AddOrEditOffcanvasProps> = ({
 			}>
 			<div className="col-12 mb-3 mt-3">
 				<SDInput
-					maxLength={128}
 					label={intl.formatMessage({ id: 'COMMON.NAME' })}
 					{...formik.getFieldProps('name')}
 					touched={formik.touched.name}
 					errors={formik.errors.name}
 					required
 					disabled={isDisabled}
+					maxLength={50}
+					showCharCounter
 				/>
 			</div>
 			<div className="col-12 mb-3 mt-3">
 				<SDInput
-					maxLength={128}
 					label={intl.formatMessage({ id: 'COMMON.CODE' })}
 					{...formik.getFieldProps('code')}
 					touched={formik.touched.code}
 					errors={formik.errors.code}
 					required
 					disabled={isDisabled}
+					maxLength={10}
+					showCharCounter
 				/>
 			</div>
 

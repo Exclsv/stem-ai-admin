@@ -359,7 +359,7 @@ export const LanguagePage: FC = () => {
 				setOffCanvasShow={() => setOffCanvasShow(false)}
 				show={showDeleteModal}
 				onHide={() => setShowDeleteModal(false)}
-				url={`/projects/${choosenItem?.id}`}
+				url={`/languages/${choosenItem?.id}`}
 				refetch={refetch}
 			/>
 		</>
