@@ -1,5 +1,6 @@
 import clsx from 'clsx';
-import { ReactNode, FC, InputHTMLAttributes } from 'react';
+import { ReactNode, FC, InputHTMLAttributes, useState, useEffect } from 'react';
+import { SDCharCounter } from '../char-counter';
 
 interface SDInputProps extends InputHTMLAttributes<HTMLInputElement> {
 	label?: string;
@@ -8,6 +9,7 @@ interface SDInputProps extends InputHTMLAttributes<HTMLInputElement> {
 	required?: boolean;
 	labelChild?: ReactNode;
 	helpText?: string;
+	showCharCounter?: boolean;
 }
 
 export const SDInput: FC<SDInputProps> = ({
@@ -27,11 +29,21 @@ export const SDInput: FC<SDInputProps> = ({
 	min,
 	disabled,
 	helpText,
+	showCharCounter = false,
 	...props
 }) => {
 	const errorMessage = typeof errors === 'string' ? errors : errors?.value;
 	const isError = touched && !!errorMessage;
 	const isValid = touched && !errorMessage;
+	const [charCount, setCharCount] = useState(0);
+
+	useEffect(() => {
+		if (value && typeof value === 'string') {
+			setCharCount(value.length);
+		} else {
+			setCharCount(0);
+		}
+	}, [value]);
 
 	const isDisabled = () => {
 		return disabled;
@@ -69,11 +81,18 @@ export const SDInput: FC<SDInputProps> = ({
 				disabled={isDisabled()}
 				{...props}
 			/>
-			{isError && (
-				<div id={`${name}-error`} className="text-danger">
-					{errorMessage}
-				</div>
-			)}
+			<div className="d-flex justify-content-between mt-1">
+				{isError && (
+					<div className="text-danger align-self-start">{errorMessage}</div>
+				)}
+				{showCharCounter && maxLength && (
+					<SDCharCounter
+						current={charCount}
+						max={maxLength}
+						className="text-end ms-auto"
+					/>
+				)}
+			</div>
 			{helpText && !isError && (
 				<div className="form-text text-muted small mt-1">{helpText}</div>
 			)}

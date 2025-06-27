@@ -7,6 +7,8 @@ export { SDOffcanvas } from './offcanvas';
 export { SDPagination } from './pagination';
 export { SDModalDelete } from './modal-delete';
 export { SDInputSelect } from './input-select';
+export { SDSelect } from './select';
 export { SDPaginationSize } from './pagination-size';
 export { SDVisibleColumnTable } from './visible-column-table';
 export { SDConfirmationModal } from './confirmation-modal';
+export { SDCharCounter } from './char-counter';

@@ -1,0 +1,1 @@
+export { SDCharCounter } from './SDCharCounter';
