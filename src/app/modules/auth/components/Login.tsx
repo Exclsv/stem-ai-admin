@@ -22,7 +22,7 @@ const loginSchema = Yup.object().shape({
 
 const initialValues = {
 	username: 'admin',
-	password: 'admin1254',
+	password: 'admin12345',
 };
 
 export function Login() {
@@ -54,10 +54,19 @@ export function Login() {
 						id: 'SUCCESS.LOGIN',
 					})
 				);
-			} catch (error) {
+			} catch (error: any) {
 				console.error(error);
 				saveAuth(undefined);
-				setStatus('The login details are incorrect');
+
+				// Проверяем статус ошибки для специфичных сообщений
+				if (error.response?.status === 401) {
+					const errorMessage =
+						error.response?.data?.detail || 'Неверные учетные данные';
+					setStatus(errorMessage);
+				} else {
+					setStatus('Произошла ошибка при входе в систему');
+				}
+
 				setSubmitting(false);
 				setLoading(false);
 			}
@@ -79,6 +88,12 @@ export function Login() {
 					/>
 				</Link>
 			</div>
+
+			{formik.status && (
+				<div className="mb-lg-5 alert alert-danger">
+					<div className="alert-text font-weight-bold">{formik.status}</div>
+				</div>
+			)}
 
 			<div className="fv-row mb-8">
 				<label className="form-label fs-6 fw-bolder text-gray-900">
