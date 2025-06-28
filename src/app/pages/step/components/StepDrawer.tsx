@@ -90,19 +90,25 @@ export const StepDrawer: FC<StepDrawerProps> = ({
 			),
 		translations: Yup.array().of(
 			Yup.object().shape({
-				value: Yup.string().test({
-					name: 'is-required',
-					message: intl.formatMessage(
-						{ id: 'VALIDATION.REQUIRED' },
-						{ field: 'Name' }
-					),
-					test: function (value) {
-						const { parent } = this;
-						return (
-							!parent.isRequired || (value !== undefined && value.trim() !== '')
-						);
-					},
-				}),
+				value: Yup.string()
+					.max(
+						128,
+						intl.formatMessage({ id: 'VALIDATION.MAX_SYMBOLS' }, { count: 128 })
+					)
+					.test({
+						name: 'is-required',
+						message: intl.formatMessage(
+							{ id: 'VALIDATION.REQUIRED' },
+							{ field: 'Name' }
+						),
+						test: function (value) {
+							const { parent } = this;
+							return (
+								!parent.isRequired ||
+								(value !== undefined && value.trim() !== '')
+							);
+						},
+					}),
 			})
 		),
 	});
@@ -278,7 +284,7 @@ export const StepDrawer: FC<StepDrawerProps> = ({
 				)
 			}>
 			<div className="row">
-				<div className="col-6 mb-5">
+				<div className="mb-5">
 					<SDInput
 						type="number"
 						min={1}
@@ -296,9 +302,8 @@ export const StepDrawer: FC<StepDrawerProps> = ({
 			</div>
 
 			{languages?.map((lang, index) => (
-				<div key={`translation-${lang.id}`} className="col-6 mb-3">
+				<div key={`translation-${lang.id}`} className="mb-3">
 					<SDInput
-						maxLength={128}
 						label={`${intl.formatMessage({ id: 'COMMON.NAME' })} (${lang.name})`}
 						name={`translations[${index}].value`}
 						value={formik.values.translations[index]?.value || ''}
@@ -316,6 +321,8 @@ export const StepDrawer: FC<StepDrawerProps> = ({
 						}
 						required
 						disabled={isDisabled}
+						showCharCounter
+						maxLength={128}
 					/>
 				</div>
 			))}

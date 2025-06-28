@@ -129,36 +129,54 @@ export const QuestionDrawer: FC<QuestionDrawerProps> = ({
 			),
 		translations: Yup.array().of(
 			Yup.object().shape({
-				value: Yup.string().test({
-					name: 'is-required',
-					message: intl.formatMessage(
-						{ id: 'VALIDATION.REQUIRED' },
-						{ field: 'Question' }
-					),
-					test: function (value) {
-						const { parent } = this;
-						return (
-							!parent.isRequired || (value !== undefined && value.trim() !== '')
-						);
-					},
-				}),
+				value: Yup.string()
+					.max(
+						1000,
+						intl.formatMessage(
+							{ id: 'VALIDATION.MAX_LENGTH' },
+							{ field: 'Question', max: 1000 }
+						)
+					)
+					.test({
+						name: 'is-required',
+						message: intl.formatMessage(
+							{ id: 'VALIDATION.REQUIRED' },
+							{ field: 'Question' }
+						),
+						test: function (value) {
+							const { parent } = this;
+							return (
+								!parent.isRequired ||
+								(value !== undefined && value.trim() !== '')
+							);
+						},
+					}),
 			})
 		),
 		prompts: Yup.array().of(
 			Yup.object().shape({
-				prompt: Yup.string().test({
-					name: 'is-required',
-					message: intl.formatMessage(
-						{ id: 'VALIDATION.REQUIRED' },
-						{ field: 'Prompt' }
-					),
-					test: function (value) {
-						const { parent } = this;
-						return (
-							!parent.isRequired || (value !== undefined && value.trim() !== '')
-						);
-					},
-				}),
+				prompt: Yup.string()
+					.max(
+						1000,
+						intl.formatMessage(
+							{ id: 'VALIDATION.MAX_LENGTH' },
+							{ field: 'Prompt', max: 1000 }
+						)
+					)
+					.test({
+						name: 'is-required',
+						message: intl.formatMessage(
+							{ id: 'VALIDATION.REQUIRED' },
+							{ field: 'Prompt' }
+						),
+						test: function (value) {
+							const { parent } = this;
+							return (
+								!parent.isRequired ||
+								(value !== undefined && value.trim() !== '')
+							);
+						},
+					}),
 			})
 		),
 		options: Yup.array().when('type', {
@@ -168,20 +186,28 @@ export const QuestionDrawer: FC<QuestionDrawerProps> = ({
 					Yup.object().shape({
 						translations: Yup.array().of(
 							Yup.object().shape({
-								value: Yup.string().test({
-									name: 'is-required',
-									message: intl.formatMessage(
-										{ id: 'VALIDATION.REQUIRED' },
-										{ field: 'Option' }
-									),
-									test: function (value) {
-										const { parent } = this;
-										return (
-											!parent.isRequired ||
-											(value !== undefined && value.trim() !== '')
-										);
-									},
-								}),
+								value: Yup.string()
+									.max(
+										1000,
+										intl.formatMessage(
+											{ id: 'VALIDATION.MAX_LENGTH' },
+											{ field: 'Option', max: 1000 }
+										)
+									)
+									.test({
+										name: 'is-required',
+										message: intl.formatMessage(
+											{ id: 'VALIDATION.REQUIRED' },
+											{ field: 'Option' }
+										),
+										test: function (value) {
+											const { parent } = this;
+											return (
+												!parent.isRequired ||
+												(value !== undefined && value.trim() !== '')
+											);
+										},
+									}),
 							})
 						),
 					})
@@ -700,7 +726,7 @@ export const QuestionDrawer: FC<QuestionDrawerProps> = ({
 				)
 			}>
 			<div className="row">
-				<div className="col-6 mb-5">
+				<div className="mb-5">
 					<SDInputSelect
 						label={intl.formatMessage({ id: 'COMMON.TYPE' })}
 						options={questionTypeOptions}
@@ -758,9 +784,8 @@ export const QuestionDrawer: FC<QuestionDrawerProps> = ({
 				{intl.formatMessage({ id: 'COMMON.OPTIONS' })}
 			</h4>
 			{languages?.map((lang, index) => (
-				<div key={`translation-${lang.id}`} className="col-6 mb-3">
-					<SDInput
-						maxLength={128}
+				<div key={`translation-${lang.id}`} className="mb-3">
+					<SDTextarea
 						label={`${intl.formatMessage({ id: 'COMMON.QUESTION' })} (${lang.name})`}
 						name={`translations[${index}].value`}
 						value={formik.values.translations[index]?.value || ''}
@@ -778,6 +803,9 @@ export const QuestionDrawer: FC<QuestionDrawerProps> = ({
 						}
 						required
 						disabled={isDisabled}
+						showCharCounter
+						maxLength={1000}
+						maxRows={15}
 					/>
 				</div>
 			))}
@@ -787,9 +815,8 @@ export const QuestionDrawer: FC<QuestionDrawerProps> = ({
 				{intl.formatMessage({ id: 'COMMON.PROMPTS' })}
 			</h4>
 			{languages?.map((lang, index) => (
-				<div key={`prompt-${lang.id}`} className="col-6 mb-3">
+				<div key={`prompt-${lang.id}`} className="mb-3">
 					<SDTextarea
-						maxLength={128}
 						label={`${intl.formatMessage({ id: 'COMMON.PROMPT' })} (${lang.name})`}
 						name={`prompts[${index}].prompt`}
 						value={formik.values.prompts[index]?.prompt || ''}
@@ -807,6 +834,9 @@ export const QuestionDrawer: FC<QuestionDrawerProps> = ({
 						}
 						disabled={isDisabled}
 						required
+						showCharCounter
+						maxLength={1000}
+						maxRows={15}
 					/>
 				</div>
 			))}
@@ -852,9 +882,8 @@ export const QuestionDrawer: FC<QuestionDrawerProps> = ({
 							{languages?.map((lang, langIndex) => (
 								<div
 									key={`option-${optionIndex}-translation-${lang.id}`}
-									className="col-6 mb-3">
-									<SDInput
-										maxLength={128}
+									className="mb-3">
+									<SDTextarea
 										label={`${intl.formatMessage({ id: 'COMMON.ANSWER', defaultMessage: 'Ответ' })} ${optionIndex + 1} (${lang.name})`}
 										name={`options[${optionIndex}].translations[${langIndex}].value`}
 										value={
@@ -892,6 +921,9 @@ export const QuestionDrawer: FC<QuestionDrawerProps> = ({
 										}
 										required
 										disabled={isDisabled}
+										showCharCounter
+										maxLength={1000}
+										maxRows={15}
 									/>
 								</div>
 							))}
