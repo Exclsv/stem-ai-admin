@@ -521,7 +521,7 @@ export const AddOrEditOffcanvas: FC<AddOrEditOffcanvasProps> = ({
 			title={intl.formatMessage({
 				id: type === 'add' ? 'COMMON.ADD' : 'COMMON.EDIT',
 			})}
-			width={'w-50'}
+			width={'w-75'}
 			onClick={() => formik.handleSubmit()}
 			dropdownItems={
 				type === 'edit' &&
@@ -647,6 +647,8 @@ export const AddOrEditOffcanvas: FC<AddOrEditOffcanvasProps> = ({
 						disabled={isDisabled}
 						required
 						showCharCounter
+						minRows={5}
+						maxRows={20}
 						maxLength={5000}
 					/>
 				</div>
