@@ -1,7 +1,6 @@
 import {Link} from 'react-router-dom'
 import {KTIcon} from '../../../../_metronic/helpers'
 import {
-  ChartsWidget1,
   ListsWidget5,
   TablesWidget1,
   TablesWidget5,
@@ -117,10 +116,6 @@ export function Overview() {
       </div>
 
       <div className='row gy-10 gx-xl-10'>
-        <div className='col-xl-6'>
-          <ChartsWidget1 className='card-xxl-stretch mb-5 mb-xl-10' />
-        </div>
-
         <div className='col-xl-6'>
           <TablesWidget1 className='card-xxl-stretch mb-5 mb-xl-10' />
         </div>
